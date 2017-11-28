@@ -1,0 +1,12 @@
+## \u4e3b\u6570\u636e\u5e93
+master.jdbc.driverClassName=com.mysql.jdbc.Driver
+master.jdbc.url=jdbc:mysql://192.168.1.201:3306/statistic_tmp_test?useUnicode=true&characterEncoding=UTF-8
+#master.jdbc.url=jdbc:mysql://localhost:3306/statistic_tmp?useUnicode=true&characterEncoding=UTF-8
+master.jdbc.userName=root
+master.jdbc.password=root123
+#master.jdbc.password=root
+
+master.dbcp.initialSize=3
+master.dbcp.maxActive=150
+master.dbcp.maxIdle=50
+master.dbcp.minIdle=15

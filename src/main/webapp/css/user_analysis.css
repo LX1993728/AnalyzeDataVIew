@@ -1,0 +1,25 @@
+@charset "UTF-8";
+.btn-group-justified{
+	width: 516px;
+}
+.user_analysis{
+	width: 50%;
+	height: 100%;
+}
+.user_sex{
+	padding-left:50px;
+	height:80px !important;
+	line-height:80px !important;
+}
+.user_sex img{
+	margin-left:80px;
+}
+.user_age{
+	height:200px !important;
+}
+.user_hy{
+	width:100%;
+	padding-left:30px;
+	padding-right:50px;
+	height:90%;
+}

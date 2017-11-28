@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anrong.wulan.admin.dao.StaticGroupMapper" >
+  <resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.StaticGroup" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="total" property="total" jdbcType="BIGINT" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="user_type" property="userType" jdbcType="INTEGER" />
+    <result column="start_time" property="startTime" jdbcType="DATE" />
+    <result column="end_time" property="endTime" jdbcType="DATE" />
+    <result column="user_province" property="userProvince" jdbcType="VARCHAR" />
+    <result column="user_sex" property="userSex" jdbcType="INTEGER" />
+    <result column="user_min_age" property="userMinAge" jdbcType="INTEGER" />
+    <result column="user_max_age" property="userMaxAge" jdbcType="INTEGER" />
+    <result column="user_channel" property="userChannel" jdbcType="VARCHAR" />
+    <result column="user_device" property="userDevice" jdbcType="VARCHAR" />
+    <result column="updateTime" property="updatetime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, name, total, status, user_type, start_time, end_time, user_province, user_sex, 
+    user_min_age, user_max_age, user_channel, user_device, updateTime
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.anrong.wulan.admin.po.StaticGroupExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from STATIC_GROUP
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+    <if test="limitStart != null and limitStart >= 0" >
+      limit ${limitStart} , ${count}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from STATIC_GROUP
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from STATIC_GROUP
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.anrong.wulan.admin.po.StaticGroupExample" >
+    delete from STATIC_GROUP
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.anrong.wulan.admin.po.StaticGroup" >
+    insert into STATIC_GROUP (id, name, total, 
+      status, user_type, start_time, 
+      end_time, user_province, user_sex, 
+      user_min_age, user_max_age, user_channel, 
+      user_device, updateTime)
+    values (#{id,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{total,jdbcType=BIGINT}, 
+      #{status,jdbcType=INTEGER}, #{userType,jdbcType=INTEGER}, #{startTime,jdbcType=DATE}, 
+      #{endTime,jdbcType=DATE}, #{userProvince,jdbcType=VARCHAR}, #{userSex,jdbcType=INTEGER}, 
+      #{userMinAge,jdbcType=INTEGER}, #{userMaxAge,jdbcType=INTEGER}, #{userChannel,jdbcType=VARCHAR}, 
+      #{userDevice,jdbcType=VARCHAR}, #{updatetime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.anrong.wulan.admin.po.StaticGroup" >
+   <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into STATIC_GROUP
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="total != null" >
+        total,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="userType != null" >
+        user_type,
+      </if>
+      <if test="startTime != null" >
+        start_time,
+      </if>
+      <if test="endTime != null" >
+        end_time,
+      </if>
+      <if test="userProvince != null" >
+        user_province,
+      </if>
+      <if test="userSex != null" >
+        user_sex,
+      </if>
+      <if test="userMinAge != null" >
+        user_min_age,
+      </if>
+      <if test="userMaxAge != null" >
+        user_max_age,
+      </if>
+      <if test="userChannel != null" >
+        user_channel,
+      </if>
+      <if test="userDevice != null" >
+        user_device,
+      </if>
+      <if test="updatetime != null" >
+        updateTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="total != null" >
+        #{total,jdbcType=BIGINT},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="userType != null" >
+        #{userType,jdbcType=INTEGER},
+      </if>
+      <if test="startTime != null" >
+        #{startTime,jdbcType=DATE},
+      </if>
+      <if test="endTime != null" >
+        #{endTime,jdbcType=DATE},
+      </if>
+      <if test="userProvince != null" >
+        #{userProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="userSex != null" >
+        #{userSex,jdbcType=INTEGER},
+      </if>
+      <if test="userMinAge != null" >
+        #{userMinAge,jdbcType=INTEGER},
+      </if>
+      <if test="userMaxAge != null" >
+        #{userMaxAge,jdbcType=INTEGER},
+      </if>
+      <if test="userChannel != null" >
+        #{userChannel,jdbcType=VARCHAR},
+      </if>
+      <if test="userDevice != null" >
+        #{userDevice,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetime != null" >
+        #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.anrong.wulan.admin.po.StaticGroupExample" resultType="java.lang.Integer" >
+    select count(*) from STATIC_GROUP
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update STATIC_GROUP
+    <set >
+      <if test="record.id != null" >
+        id = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.name != null" >
+        name = #{record.name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.total != null" >
+        total = #{record.total,jdbcType=BIGINT},
+      </if>
+      <if test="record.status != null" >
+        status = #{record.status,jdbcType=INTEGER},
+      </if>
+      <if test="record.userType != null" >
+        user_type = #{record.userType,jdbcType=INTEGER},
+      </if>
+      <if test="record.startTime != null" >
+        start_time = #{record.startTime,jdbcType=DATE},
+      </if>
+      <if test="record.endTime != null" >
+        end_time = #{record.endTime,jdbcType=DATE},
+      </if>
+      <if test="record.userProvince != null" >
+        user_province = #{record.userProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="record.userSex != null" >
+        user_sex = #{record.userSex,jdbcType=INTEGER},
+      </if>
+      <if test="record.userMinAge != null" >
+        user_min_age = #{record.userMinAge,jdbcType=INTEGER},
+      </if>
+      <if test="record.userMaxAge != null" >
+        user_max_age = #{record.userMaxAge,jdbcType=INTEGER},
+      </if>
+      <if test="record.userChannel != null" >
+        user_channel = #{record.userChannel,jdbcType=VARCHAR},
+      </if>
+      <if test="record.userDevice != null" >
+        user_device = #{record.userDevice,jdbcType=VARCHAR},
+      </if>
+      <if test="record.updatetime != null" >
+        updateTime = #{record.updatetime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update STATIC_GROUP
+    set id = #{record.id,jdbcType=BIGINT},
+      name = #{record.name,jdbcType=VARCHAR},
+      total = #{record.total,jdbcType=BIGINT},
+      status = #{record.status,jdbcType=INTEGER},
+      user_type = #{record.userType,jdbcType=INTEGER},
+      start_time = #{record.startTime,jdbcType=DATE},
+      end_time = #{record.endTime,jdbcType=DATE},
+      user_province = #{record.userProvince,jdbcType=VARCHAR},
+      user_sex = #{record.userSex,jdbcType=INTEGER},
+      user_min_age = #{record.userMinAge,jdbcType=INTEGER},
+      user_max_age = #{record.userMaxAge,jdbcType=INTEGER},
+      user_channel = #{record.userChannel,jdbcType=VARCHAR},
+      user_device = #{record.userDevice,jdbcType=VARCHAR},
+      updateTime = #{record.updatetime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.anrong.wulan.admin.po.StaticGroup" >
+    update STATIC_GROUP
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="total != null" >
+        total = #{total,jdbcType=BIGINT},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="userType != null" >
+        user_type = #{userType,jdbcType=INTEGER},
+      </if>
+      <if test="startTime != null" >
+        start_time = #{startTime,jdbcType=DATE},
+      </if>
+      <if test="endTime != null" >
+        end_time = #{endTime,jdbcType=DATE},
+      </if>
+      <if test="userProvince != null" >
+        user_province = #{userProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="userSex != null" >
+        user_sex = #{userSex,jdbcType=INTEGER},
+      </if>
+      <if test="userMinAge != null" >
+        user_min_age = #{userMinAge,jdbcType=INTEGER},
+      </if>
+      <if test="userMaxAge != null" >
+        user_max_age = #{userMaxAge,jdbcType=INTEGER},
+      </if>
+      <if test="userChannel != null" >
+        user_channel = #{userChannel,jdbcType=VARCHAR},
+      </if>
+      <if test="userDevice != null" >
+        user_device = #{userDevice,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetime != null" >
+        updateTime = #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.anrong.wulan.admin.po.StaticGroup" >
+    update STATIC_GROUP
+    set name = #{name,jdbcType=VARCHAR},
+      total = #{total,jdbcType=BIGINT},
+      status = #{status,jdbcType=INTEGER},
+      user_type = #{userType,jdbcType=INTEGER},
+      start_time = #{startTime,jdbcType=DATE},
+      end_time = #{endTime,jdbcType=DATE},
+      user_province = #{userProvince,jdbcType=VARCHAR},
+      user_sex = #{userSex,jdbcType=INTEGER},
+      user_min_age = #{userMinAge,jdbcType=INTEGER},
+      user_max_age = #{userMaxAge,jdbcType=INTEGER},
+      user_channel = #{userChannel,jdbcType=VARCHAR},
+      user_device = #{userDevice,jdbcType=VARCHAR},
+      updateTime = #{updatetime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

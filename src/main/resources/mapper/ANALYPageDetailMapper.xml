@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anrong.wulan.admin.dao.ANALYPageDetailMapper">
+
+	<select id="getInOrOutDetailOfPage" 
+		resultType="com.anrong.wulan.admin.vo.ANALYPageInOutVO">
+		SELECT 
+			targetName,
+			SUM(times) AS times,
+			p2.totalTimes AS totalTimes,
+			SUM(times)/p2.totalTimes AS timesPercent
+		FROM
+			ANALYZE_PDETAIL p1
+		INNER JOIN (SELECT SUM(times) AS totalTimes FROM ANALYZE_PDETAIL WHERE 
+		NAME = #{0} AND type = #{1}
+		AND currentDay BETWEEN #{2}
+		AND #{3} ) AS p2
+		WHERE
+			type = #{1}
+		AND NAME = #{0}
+		AND currentDay BETWEEN #{2}
+		AND #{3} GROUP BY targetName
+		;
+	</select>
+	
+	<select id="getPageDetailsByCriteria" parameterType="com.anrong.wulan.admin.vo.ANALYPageDetailVO"
+		resultType="com.anrong.wulan.admin.po.AnalyzePDetail">
+		SELECT
+			NAME,
+			type,
+			targetName,
+			MODE,
+			SUM(times)times,
+			AVG(stayAverage)stayAverage
+		FROM
+			ANALYZE_PDETAIL
+		WHERE
+			NAME = #{name}
+		AND currentDay BETWEEN #{beginDate}
+		AND #{endDate}
+		GROUP BY
+			targetName,
+			MODE LIMIT #{offset},#{pageSize};
+	</select>
+	
+	<select id="getPageDetailsCountByCriteria" parameterType="com.anrong.wulan.admin.vo.ANALYPageDetailVO"
+		resultType="java.lang.Long">
+		SELECT
+			COUNT(DISTINCT targetName,mode)
+		FROM
+			ANALYZE_PDETAIL
+		WHERE
+			NAME = #{name}
+		AND currentDay BETWEEN #{beginDate}
+		AND #{endDate};
+	</select>
+</mapper>

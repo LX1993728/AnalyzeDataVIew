@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.EquipmentModelMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.EquipmentModel">
+		<result column="vendor" property="vendor" jdbcType="VARCHAR" />
+		<result column="newUser" property="newUser" jdbcType="INTEGER" />
+		<result column="activeUser" property="activeUser" jdbcType="INTEGER" />
+		<result column="startTime" property="startTime" jdbcType="INTEGER" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		vendor,newUser,activeUser,startTime
+	</sql>
+	<select id="queryVendorDetailCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		vendor,
+		newUser,
+		activeUser,
+		startTime
+		FROM
+		(
+		SELECT
+		VENDOR AS vendor,
+		sum(NEW_USER) newUser
+		FROM
+		NEW_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY vendor
+		) n
+		LEFT JOIN (
+		SELECT
+		VENDOR activeVendor,
+		sum(ACTIVE_USER) activeUser
+		FROM
+		ACTIVE_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY activeVendor
+		) a ON n.vendor = a.activeVendor
+		LEFT JOIN (
+		SELECT
+		VENDOR startVendor,
+		sum(START) startTime
+		FROM
+		START_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY startVendor
+		) s ON n.vendor = s.startVendor
+		ORDER BY
+		vendor DESC
+	</select>
+	<select id="queryVendorDetail" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		vendor,
+		newUser,
+		activeUser,
+		startTime
+		FROM
+		(
+		SELECT
+		VENDOR AS vendor,
+		sum(NEW_USER) newUser
+		FROM
+		NEW_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY vendor
+		) n
+		LEFT JOIN (
+		SELECT
+		VENDOR activeVendor,
+		sum(ACTIVE_USER) activeUser
+		FROM
+		ACTIVE_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY activeVendor
+		) a ON n.vendor = a.activeVendor
+		LEFT JOIN (
+		SELECT
+		VENDOR startVendor,
+		sum(START) startTime
+		FROM
+		START_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY startVendor
+		) s ON n.vendor = s.startVendor
+		ORDER BY
+		vendor DESC
+		limit ${start},${size}
+	</select>
+
+
+
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startDate,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endDate,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

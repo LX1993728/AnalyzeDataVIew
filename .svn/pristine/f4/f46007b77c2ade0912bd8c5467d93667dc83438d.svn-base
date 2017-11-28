@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.ExceptionAnalysisMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.ExceptionAnalysis">
+		<result column="date1" property="date1" jdbcType="VARCHAR" />
+		<result column="exceptionCount" property="exceptionCount"
+			jdbcType="INTEGER" />
+		<result column="businessExceptionCount" property="businessExceptionCount"
+			jdbcType="INTEGER" />
+		<result column="sysExceptionCount" property="sysExceptionCount"
+			jdbcType="INTEGER" />
+		<result column="useTimeProportion" property="useTimeProportion"
+			jdbcType="VARCHAR" />
+		<result column="startTimeProportion" property="startTimeProportion"
+			jdbcType="VARCHAR" />
+
+		<result column="totalException" property="totalException"
+			jdbcType="INTEGER" />
+		<result column="todayMostExceptionName" property="todayMostExceptionName"
+			jdbcType="VARCHAR" />
+		<result column="todayMostExceptionPosition" property="todayMostExceptionPosition"
+			jdbcType="VARCHAR" />
+
+		<result column="todayCompareYesterday" property="todayCompareYesterday"
+			jdbcType="VARCHAR" />
+		<result column="todayCOmpareWeek" property="todayCOmpareWeek"
+			jdbcType="VARCHAR" />
+		<result column="todayCompareMonth" property="todayCompareMonth"
+			jdbcType="VARCHAR" />
+
+		<result column="exceptionName" property="exceptionName"
+			jdbcType="VARCHAR" />
+		<result column="exceptionTime" property="exceptionTime"
+			jdbcType="INTEGER" />
+		<result column="exceptionDetail" property="exceptionDetail"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="SysExceptionMap" type="com.anrong.wulan.admin.po.SysExceptionHour">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="serverid" property="serverid" jdbcType="VARCHAR" />
+		<result column="log_type" property="logType" jdbcType="VARCHAR" />
+		<result column="app_key" property="appKey" jdbcType="VARCHAR" />
+		<result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+		<result column="exception_name" property="exceptionName"
+			jdbcType="VARCHAR" />
+		<result column="statistics_invoke_num" property="statisticsInvokeNum"
+			jdbcType="INTEGER" />
+		<result column="statistics_sign" property="statisticsSign"
+			jdbcType="SMALLINT" />
+		<result column="statistics_date" property="statisticsDate"
+			jdbcType="TIMESTAMP" />
+		<result column="affiliated_org" property="affiliatedOrg"
+			jdbcType="VARCHAR" />
+		<result column="affiliated_region" property="affiliatedRegion"
+			jdbcType="VARCHAR" />
+		<result column="exceptionNum" property="exceptionNum" jdbcType="INTEGER" />
+
+	</resultMap>
+	<sql id="Base_Column_List">
+		date1,exceptionCount,businessExceptionCount,sysExceptionCount,useTimeProportion,startTimeProportion
+	</sql>
+	<select id="getTodayExceptionSummary" resultMap="BaseResultMap">
+		SELECT
+		businessExceptionCount + sysExceptionCount exceptionCount,
+		businessExceptionCount,
+		sysExceptionCount,
+		(
+		businessExceptionCount + sysExceptionCount
+		)/useTime useTimeProportion,
+		(
+		businessExceptionCount + sysExceptionCount
+		)/startTime
+		startTimeProportion
+		FROM
+		(
+		SELECT
+		APP_KEY appKey1,
+		sum(business_EXCEP)
+		businessExceptionCount,
+		SUM(system_EXCEP) sysExceptionCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date = DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		) AS a
+		LEFT
+		JOIN (
+		SELECT
+		APP_KEY appKey2,
+		SUM(DURATION_TIME) useTime
+		FROM
+		DURATION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date = DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		) AS b ON
+		a.appKey1 = appKey2
+		LEFT JOIN (
+		SELECT
+		APP_KEY appKey3,
+		SUM(START)
+		startTime
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date = DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		) AS c ON
+		a.appKey1 = appKey3
+	</select>
+
+	<select id="getYestodayExceptionSummary" resultMap="BaseResultMap">
+		SELECT
+		businessExceptionCount + sysExceptionCount exceptionCount,
+		businessExceptionCount,
+		sysExceptionCount,
+		(
+		businessExceptionCount + sysExceptionCount
+		)/useTime useTimeProportion,
+		(
+		businessExceptionCount + sysExceptionCount
+		)/startTime
+		startTimeProportion
+		FROM
+		(
+		SELECT
+		APP_KEY appKey1,
+		sum(business_EXCEP)
+		businessExceptionCount,
+		SUM(system_EXCEP) sysExceptionCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+		) AS a
+		LEFT
+		JOIN (
+		SELECT
+		APP_KEY appKey2,
+		SUM(DURATION_TIME) useTime
+		FROM
+		DURATION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+		) AS b ON
+		a.appKey1 = appKey2
+		LEFT JOIN (
+		SELECT
+		APP_KEY appKey3,
+		SUM(START)
+		startTime
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+		) AS c ON
+		a.appKey1 = appKey3
+	</select>
+	<select id="getLastWeekExceptionSummary" resultMap="BaseResultMap">
+		SELECT
+		businessExceptionCount + sysExceptionCount exceptionCount,
+		businessExceptionCount,
+		sysExceptionCount,
+		(
+		businessExceptionCount + sysExceptionCount
+		)/useTime useTimeProportion,
+		(
+		businessExceptionCount + sysExceptionCount
+		)/startTime
+		startTimeProportion
+		FROM
+		(
+		SELECT
+		APP_KEY appKey1,
+		sum(business_EXCEP)
+		businessExceptionCount,
+		SUM(system_EXCEP) sysExceptionCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND
+		DATE_SUB(CURDATE(),
+		INTERVAL 0 DAY)
+		) AS a
+		LEFT JOIN (
+		SELECT
+		APP_KEY
+		appKey2,
+		SUM(DURATION_TIME) useTime
+		FROM
+		DURATION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND
+		DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		) AS b ON a.appKey1 = appKey2
+		LEFT
+		JOIN (
+		SELECT
+		APP_KEY appKey3,
+		SUM(START) startTime
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND
+		DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		) AS c ON a.appKey1 = appKey3
+	</select>
+
+	<select id="getLastMonthExceptionSummary" resultMap="BaseResultMap">
+		SELECT
+		businessExceptionCount + sysExceptionCount exceptionCount,
+		businessExceptionCount,
+		sysExceptionCount,
+		(
+		businessExceptionCount + sysExceptionCount
+		)/useTime  useTimeProportion,
+		(
+		businessExceptionCount + sysExceptionCount
+		)/startTime 
+		startTimeProportion
+		FROM
+		(
+		SELECT
+		APP_KEY appKey1,
+		sum(business_EXCEP)
+		businessExceptionCount,
+		SUM(system_EXCEP) sysExceptionCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND
+		DATE_SUB(CURDATE(),
+		INTERVAL 0 DAY)
+		) AS a
+		LEFT JOIN (
+		SELECT
+		APP_KEY
+		appKey2,
+		SUM(DURATION_TIME) useTime
+		FROM
+		DURATION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND
+		DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		) AS b ON a.appKey1 = appKey2
+		LEFT
+		JOIN (
+		SELECT
+		APP_KEY appKey3,
+		SUM(START) startTime
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND
+		DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		) AS c ON a.appKey1 = appKey3
+	</select>
+	<select id="getBusinessExceptionSummary" resultMap="BaseResultMap">
+		SELECT
+		totalException,
+		todayMostExceptionName,
+		todayMostExceptionPosition
+		FROM
+		(
+		SELECT
+		APP_KEY appKey1,
+		SUM(BUSINESS_EXCEP) totalException
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		) AS a
+		LEFT JOIN (
+		SELECT
+		APP_KEY appKey2,
+		EXCEPTION_NAME
+		todayMostExceptionName,
+		COUNT(EXCEPTION_NAME)
+		exceptionCount
+		FROM
+		BUSINESS_EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date =
+		DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		GROUP BY
+		EXCEPTION_NAME
+		ORDER BY
+		exceptionCount DESC
+		LIMIT 1
+		) AS b ON
+		a.appKey1 =
+		appKey2
+		LEFT JOIN (
+		SELECT
+		APP_KEY appKey3,
+		EXCEPTION_LOC
+		todayMostExceptionPosition,
+		COUNT(EXCEPTION_LOC) exceptionLocCount
+		FROM
+		BUSINESS_EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date = DATE_SUB(CURDATE(),
+		INTERVAL 0 DAY)
+		GROUP BY
+		todayMostExceptionPosition
+		ORDER BY
+		exceptionLocCount DESC
+		LIMIT 1
+		) AS c ON a.appKey1
+		= appKey3
+	</select>
+
+	<select id="getExceptionSummary" resultMap="BaseResultMap">
+		SELECT
+		todayCount/yesterdayCount todayCompareYesterday,
+		todayCount/weekCount
+		todayCOmpareWeek,
+		todayCount/monthCount
+		todayCompareMonth
+		FROM
+		(
+		SELECT
+		/*
+		BUSINESS_EXCEP,
+		SYSTEM_EXCEP*/
+		APP_KEY
+		appkey1,
+		SUM(
+		BUSINESS_EXCEP +
+		SYSTEM_EXCEP
+		) todayCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date =
+		DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		)
+		AS a
+		LEFT JOIN
+		(
+		SELECT
+		APP_KEY appkey2,
+		SUM(
+		BUSINESS_EXCEP + SYSTEM_EXCEP
+		)
+		yesterdayCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date =
+		DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+		)
+		AS b ON
+		a.appkey1 = appkey2 LEFT JOIN
+		(
+		SELECT
+		APP_KEY appkey3,
+		SUM(
+		BUSINESS_EXCEP + SYSTEM_EXCEP
+		) weekCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+		AND
+		DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		)AS c ON a.appkey1 = appkey3 LEFT
+		JOIN
+		(
+		SELECT
+		APP_KEY appkey4,
+		SUM(
+		BUSINESS_EXCEP + SYSTEM_EXCEP
+		)
+		monthCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND
+		statistics_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+		AND
+		DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		)AS d ON a.appkey1 = appkey4
+	</select>
+	<select id="getSystemExceptionByDate" resultMap="BaseResultMap">
+		SELECT
+		STATISTICS_DATE date1,
+		SUM(SYSTEM_EXCEP) exceptionCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		STATISTICS_DATE
+	</select>
+	<select id="getSystemExceptionDetail" resultMap="BaseResultMap">
+		SELECT
+		EXCEPTION_NAME exceptionName,
+		COUNT(EXCEPTION_NAME) exceptionTime
+		FROM
+		SYS_EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		exceptionName
+	</select>
+
+
+	<select id="getApplicationExceptionByDate" resultMap="BaseResultMap">
+		SELECT
+		STATISTICS_DATE date1,
+		SUM(BUSINESS_EXCEP) exceptionCount
+		FROM
+		EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		STATISTICS_DATE
+	</select>
+	<select id="getApplicationExceptionDetail" resultMap="BaseResultMap">
+		SELECT
+		EXCEPTION_NAME exceptionName,
+		COUNT(EXCEPTION_NAME) exceptionTime
+		FROM
+		BUSINESS_EXCEPTION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		exceptionName
+	</select>
+
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+
+	<sql id="Where_Column_AppKeyOrLogType3">
+		<where>
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	<!--首页top10系统异常次数 -->
+	<select id="queryTop10SysException" parameterType="java.lang.Long"
+		resultMap="SysExceptionMap">
+		SELECT SUM(STATISTICS_INVOKE_NUM) AS exceptionNum,EXCEPTION_NAME FROM
+		SYS_EXCEPTION_HOUR
+		<where>
+			<if test="statisticsDate==1 or statisticsDate==0">
+				STATISTICS_DATE = DATE_SUB(CURDATE(),INTERVAL
+				#{statisticsDate} DAY)
+			</if>
+			<if test="statisticsDate==7">
+				STATISTICS_DATE BETWEEN
+				DATE_SUB(CURDATE(),INTERVAL
+				#{statisticsDate} DAY)
+				AND DATE_SUB(CURDATE(),INTERVAL
+				0 DAY)
+			</if>
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			GROUP BY EXCEPTION_NAME
+			ORDER BY exceptionNum LIMIT 10
+		</where>
+	</select>
+</mapper>

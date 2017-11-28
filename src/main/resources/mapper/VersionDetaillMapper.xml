@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.VersionDetailMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.VersionDetailModel">
+		<result column="vendor" property="vendor" jdbcType="VARCHAR" />
+		<result column="newUser" property="newUser" jdbcType="INTEGER" />
+		<result column="activeUser" property="activeUser" jdbcType="INTEGER" />
+		<result column="startTime" property="startTime" jdbcType="INTEGER" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		vendor,newUser,activeUser,startTime
+	</sql>
+	<select id="queryVersionDetailCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		os,
+		newUser,
+		activeUser,
+		startTime
+		FROM
+		(
+		SELECT
+		OS AS os,
+		sum(NEW_USER) newUser
+		FROM
+		NEW_USER_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY os
+		) n
+		LEFT JOIN (
+		SELECT
+		OS activeOs,
+		sum(ACTIVE_USER) activeUser
+		FROM
+		ACTIVE_USER_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY activeOs
+		) a ON n.os = a.activeOs
+		LEFT JOIN (
+		SELECT
+		OS startOs,
+		sum(START) startTime
+		FROM
+		START_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY startOs
+		) s ON n.os = s.startOs
+		ORDER BY
+		os DESC
+	</select>
+	<select id="queryVersionDetail" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		os,
+		newUser,
+		activeUser,
+		startTime
+		FROM
+		(
+		SELECT
+		OS AS os,
+		sum(NEW_USER) newUser
+		FROM
+		NEW_USER_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY os
+		) n
+		LEFT JOIN (
+		SELECT
+		OS activeOs,
+		sum(ACTIVE_USER) activeUser
+		FROM
+		ACTIVE_USER_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY activeOs
+		) a ON n.os = a.activeOs
+		LEFT JOIN (
+		SELECT
+		OS startOs,
+		sum(START) startTime
+		FROM
+		START_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY startOs
+		) s ON n.os = s.startOs
+		ORDER BY
+		os DESC
+		limit
+		${start},${size}
+	</select>
+
+
+
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startDate,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endDate,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

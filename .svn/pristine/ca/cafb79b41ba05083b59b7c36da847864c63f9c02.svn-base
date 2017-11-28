@@ -1,0 +1,14 @@
+redis.host = 192.168.1.140
+redis.port = 6379
+redis.password = anrongtec123
+redis.cachedb.index = 0
+redis.servicedb.index = 1
+redis.sessiondb.index = 2
+
+redis.maxIdle = 200
+redis.maxActive = 1024
+redis.maxWait = 10000
+redis.testOnBorrow = true
+redis.testOnReturn = false
+redis.expire = 120000
+redis.timeout = 30000

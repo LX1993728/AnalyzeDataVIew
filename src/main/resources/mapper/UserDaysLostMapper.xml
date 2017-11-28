@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.UserDaysLostMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.UserDaysLost">
+		<result column="LOG_TYPE" property="logType" jdbcType="VARCHAR" />
+		<result column="APP_KEY" property="appKey" jdbcType="VARCHAR" />
+		<result column="APP_VERSION" property="appVersion" jdbcType="VARCHAR" />
+		<result column="STATISTICS_DATE" property="ststisticsDate"
+			jdbcType="TIMESTAMP" />
+		<result column="CONTINUOUS_DAY" property="countinuousDay"
+			jdbcType="INTEGER" />
+		<result column="LOST_1" property="lost_1" jdbcType="INTEGER" />
+		<result column="LOST_2_4" property="lost_2_4" jdbcType="INTEGER" />
+		<result column="LOST_5_7" property="lost_5_7" jdbcType="INTEGER" />
+		<result column="LOST_8_14" property="lost_8_14" jdbcType="INTEGER" />
+		<result column="LOST_15_30" property="lost_15_30" jdbcType="INTEGER" />
+		<result column="LOST_31_90" property="lost_31_90" jdbcType="INTEGER" />
+		<result column="LOST_91_180" property="lost_91_180" jdbcType="INTEGER" />
+		<result column="LOST_181_365" property="lost_181_365" jdbcType="INTEGER" />
+		<result column="LOST_365_UP" property="lost_365_up" jdbcType="INTEGER" />
+	</resultMap>
+	<select id="selectDay" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		SELECT SUM(LOST_1) lost_1,SUM(LOST_2_4) lost_2_4,SUM(LOST_5_7)
+		lost_5_7,
+		SUM(LOST_8_14) lost_8_14,SUM(LOST_15_30)
+		lost_15_30,SUM(LOST_31_90) lost_31_90,SUM(LOST_91_180)
+		lost_91_180,
+		SUM(LOST_181_365) lost_181_365,SUM(LOST_365_UP)
+		lost_365_up FROM
+		USE_DAYS_LOST_DISTRIBUTE_DAY
+		<include refid="Where_AppKeyOrLogType" />
+		GROUP BY CONTINUOUS_DAY
+	</select>
+	<sql id="Where_AppKeyOrLogType">
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND CONTINUOUS_DAY
+			= #{countinuousDay,jdbcType=INTEGER}
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+
+</mapper>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.OperateSystemDataMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.OperateSystemData">
+		<result column="operateSys1" property="operateSys1" jdbcType="VARCHAR" />
+		<result column="newUser" property="newUser" jdbcType="INTEGER" />
+		<result column="newUserProportion" property="newUserProportion"
+			jdbcType="VARCHAR" />
+		<result column="startTime" property="startTime" jdbcType="INTEGER" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		operateSys1,newUser,newUserProportion,startTime
+	</sql>
+	<select id="getOperateSystemData" resultMap="BaseResultMap">
+		SELECT
+		operateSys1,
+		newUser,
+		newUserProportion,
+		startTime
+		FROM
+		(SELECT
+		os AS operateSys1,
+		sum(NEW_USER) AS newUser
+		FROM
+		NEW_USER_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		os ) AS a LEFT JOIN
+		(
+		SELECT
+		os AS operateSys2,
+		sum(NEW_USER) / (
+		SELECT
+		sum(NEW_USER)
+		FROM
+		NEW_USER_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		) AS newUserProportion
+		FROM
+		NEW_USER_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		os
+		)AS b ON
+		a.operateSys1=operateSys2 LEFT JOIN
+		(
+		SELECT
+		os AS operateSys3,
+		sum(START) AS startTime
+		FROM
+		START_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		OS
+		)AS c ON
+		a.operateSys1=operateSys3
+	</select>
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

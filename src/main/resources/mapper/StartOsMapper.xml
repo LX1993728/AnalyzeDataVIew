@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.StartOsMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.StartOs">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="serverid" property="serverid" jdbcType="VARCHAR" />
+		<result column="log_type" property="logType" jdbcType="VARCHAR" />
+		<result column="app_key" property="appKey" jdbcType="VARCHAR" />
+		<result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+		<result column="os" property="os" jdbcType="VARCHAR" />
+		<result column="start" property="start" jdbcType="INTEGER" />
+		<result column="statistics_date" property="statisticsDate"
+			jdbcType="TIMESTAMP" />
+		<result column="affiliated_org" property="affiliatedOrg"
+			jdbcType="VARCHAR" />
+		<result column="affiliated_region" property="affiliatedRegion"
+			jdbcType="VARCHAR" />
+		<result column="startTotal" property="startTotal" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<sql id="Where_Column_Detial">
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			AND APP_VERSION = #{version,jdbcType=VARCHAR}
+			AND OS =
+			#{os,jdbcType=VARCHAR}
+		</where>
+	</sql>
+	<!-- 启动次数图表 -->
+	<select id="selectRecord" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select ID ,START ,STATISTICS_DATE from START_OS_DAY
+		<include refid="Where_Column_Detial" />
+	</select>
+	
+	<select id="selectRecordByPage" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select ID ,START as start ,STATISTICS_DATE as statisticsDate from
+		START_OS_DAY
+		<where>
+			statistics_date between
+			date_sub(curdate(),interval 30 day)
+			and
+			date_sub(curdate(),interval 0 day)
+			and app_key =
+			#{appKey,jdbcType=VARCHAR}
+			and log_type = #{logType,jdbcType=VARCHAR}
+			and app_version = #{version,jdbcType=VARCHAR}
+			and os =
+			#{os,jdbcType=VARCHAR}
+
+		</where>
+
+	</select>
+	
+	<!-- 版本摘要 根据版本启动次数 -->
+	<select id="selectStartByVerOs" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select sum(START) as start from START_OS_DAY
+		<include refid="Where_Column_Detial" />
+		GROUP BY APP_VERSION,OS
+	</select>
+
+	<!-- 按系统查询启动次数 -->
+	<select id="queryStartTimeTotal" resultMap="BaseResultMap">
+		SELECT
+		os AS os,
+		sum(START) AS startTotal
+		FROM
+		START_OS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+			GROUP BY
+			OS
+			order by startTotal desc
+	</select>
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+
+</mapper>

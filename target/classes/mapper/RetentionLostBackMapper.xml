@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.RetentionLostBackDetailMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.RetentionLostBackUser">
+		<result column="retentionDate" property="retentionDate" jdbcType="VARCHAR" />
+		<result column="retentionUser" property="retentionUser" jdbcType="INTEGER" />
+		<result column="lostUser" property="lostUser" jdbcType="INTEGER" />
+		<result column="backUser" property="backUser" jdbcType="INTEGER" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		retentionDate,retentionUser,lostUser,backUser
+	</sql>
+	<!-- 查询总数 -->
+	<select id="queryDetailCount" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		SELECT
+	retentionDate,
+	retentionUser,
+	lostUser,
+	backUser
+FROM
+	(
+		SELECT
+			STATISTICS_DATE retentionDate,
+			THIRTY_DAY_RETENTION retentionUser
+		FROM
+			RETENTION_DAY
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		retentionDate BETWEEN DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS a
+		LEFT JOIN (
+		SELECT
+		STATISTICS_DATE lostDate,
+		THIRTY_DAY_LOST_USER lostUser
+	FROM
+		LOST_USER_DAY
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		lostDate BETWEEN DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS b ON a.retentionDate = b.lostDate
+		LEFT JOIN (
+		SELECT
+		STATISTICS_DATE backDate,
+		THIRTY_DAY_BACK_USER backUser
+	FROM
+		BACK_USER_DAY
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		backDate BETWEEN DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS c ON a.retentionDate = c.backDate
+		ORDER BY retentionDate DESC
+	</select>
+	<!-- 分页查询 -->
+	<select id="queryDetail" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		SELECT
+	retentionDate,
+	retentionUser,
+	lostUser,
+	backUser
+FROM
+	(
+		SELECT
+			STATISTICS_DATE retentionDate,
+			THIRTY_DAY_RETENTION retentionUser
+		FROM
+			RETENTION_DAY
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		retentionDate BETWEEN DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS a
+		LEFT JOIN (
+		SELECT
+		STATISTICS_DATE lostDate,
+		THIRTY_DAY_LOST_USER lostUser
+	FROM
+		LOST_USER_DAY
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		lostDate BETWEEN DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS b ON a.retentionDate = b.lostDate
+		LEFT JOIN (
+		SELECT
+		STATISTICS_DATE backDate,
+		THIRTY_DAY_BACK_USER backUser
+	FROM
+		BACK_USER_DAY
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		backDate BETWEEN DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS c ON a.retentionDate = c.backDate
+		ORDER BY retentionDate DESC 
+		limit ${start},${size}
+	</select>
+	<sql id="Where_Column_AppKeyOrLogType">
+		<where>
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

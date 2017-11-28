@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 根节点，不进行定时扫描 -->
+<configuration scan="false"> 
+	<property name="appName" value="admin"/>
+	<property name="LOG_HOME" value="/data/logs" />
+	<!-- 上下文名字 -->
+	<contextName>${appName}</contextName>
+	<!-- 控制台输出 -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%-5level] [%class] [%msg]%n</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- 按照每天生成日志文件 -->
+	<appender name="RFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/adminLog.log</file>
+		<!-- 追加 -->
+		<append>true</append>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+		</filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_HOME}/adminLog.%d{yyyy-MM-dd}.log.zip</fileNamePattern> 
+		</rollingPolicy>
+		 <!-- 日志格式化 -->
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%-5level] [%msg]%n</pattern>
+		</encoder>
+	</appender>
+	
+	  <!-- show parameters for mybatis -->
+    <logger name="com.ibatis" level="DEBUG" />
+    <logger name="com.ibatis.common.jdbc.SimpleDataSource" level="INFO" />
+    <logger name="com.ibatis.common.jdbc.ScriptRunner" level="INFO" />
+    <logger name="com.ibatis.sqlmap.engine.impl.SqlMapClientDelegate" level="INFO" />
+    <logger name="java.sql.Connection" level="INFO" />
+    <logger name="java.sql.Statement" level="DEBUG" />
+    <logger name="java.sql.PreparedStatement" level="DEBUG" />
+
+	<!-- 日志输出级别 -->
+	<root level="DEBUG">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="RFILE" />
+	</root>
+
+</configuration>

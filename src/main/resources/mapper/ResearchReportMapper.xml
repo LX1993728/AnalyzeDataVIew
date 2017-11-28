@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.ResearchReportMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.ResearchReport">
+		<result column="date" property="date"
+			jdbcType="TIMESTAMP" />
+		<result column="userTotal" property="userTotal" jdbcType="INTEGER" />
+		<result column="activeUserTotal" property="activeUserTotal" jdbcType="INTEGER" />
+		<result column="userRetainedTotal" property="userRetainedTotal" jdbcType="INTEGER" />
+		<result column="activeUserRetainedTotal" property="activeUserRetainedTotal" jdbcType="INTEGER" />
+		<result column="applicationExceTotal" property="applicationExceTotal" jdbcType="INTEGER" />
+		<result column="applicationStartTotal" property="applicationStartTotal" jdbcType="INTEGER" />
+		<result column="pageExceTotal" property="pageExceTotal" jdbcType="INTEGER" />
+		<result column="pageVisitTotal" property="pageVisitTotal" jdbcType="INTEGER" />
+		<result column="userCommentsTotal" property="userCommentsTotal" jdbcType="INTEGER" />
+		<result column="userPraiseTotal" property="userPraiseTotal" jdbcType="INTEGER" />
+		<result column="visitTotal" property="visitTotal" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<select id="queryByDate" resultMap="BaseResultMap" >
+	
+	 	select * from ResearchReport
+	
+	</select>
+
+</mapper>

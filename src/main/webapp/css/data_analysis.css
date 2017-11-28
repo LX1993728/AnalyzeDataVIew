@@ -1,0 +1,87 @@
+@charset "UTF-8";
+.data_form {
+    width: 98%;
+    height: 203px;
+    margin-left: -14px;
+/*     background: url(../imgs/data1.png) no-repeat; */
+}
+
+.data_table {
+    width: 94%;
+    border: 1px solid #545d72;
+    color: #f2f2f2;
+    text-align: center;
+    font-size: 18px;
+    margin-top: 30px;
+}
+
+.data_table tr {
+    height: 42px;
+    border-bottom: 1px solid #545d72;
+}
+
+.border_left {
+    border-left: 1px solid #545d72;
+}
+
+.data_table tr:nth-child(odd) {
+    background: #444c63;
+}
+
+.user_distribution1{
+	width: 100%;
+    height: 270px;
+}
+
+.data_table1{
+    width: 94%;
+    border: 1px solid #545d72;
+    color: #f2f2f2;
+    text-align: center;
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+.data_table1 tr{
+	height: 36px;
+}
+
+.data_table1 tr:nth-child(odd) {
+    background: #3b4353;
+}
+
+.age_data_title{
+ 	height: 22px;
+    line-height: 22px;
+    font-size: 16px;
+    border-left: 3px solid #5ce59d;
+    padding-left: 8px;
+    color: #fff;
+    font-weight: 500;
+    margin-top: 10px;
+}
+.user_portrait{
+ 	width: 100%;
+ 	height: 110px;
+ 	line-height:110px;
+}
+.user_portrait span{
+	margin:20px 0px;
+	color:#fff;
+	font-size:20px;
+	display:black;
+}
+.people{
+	width:70px;
+	margin:20px 10px;
+}
+.zf{
+	font-size:35px;
+}
+.comment{
+	height:0px;
+	line-height:0px;
+}
+.comment ul{
+	margin:-18px 0 0 0;
+}

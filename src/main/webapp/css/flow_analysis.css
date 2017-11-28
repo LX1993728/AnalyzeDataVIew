@@ -1,0 +1,226 @@
+@charset "UTF-8";
+.flow_analysis_content {
+    width: 100%;
+    height: 1212px;
+    background: #3b4252;
+}
+
+.flow_analysis_up {
+    width: 100%;
+    height: 764px;
+    background: #444c63;
+}
+
+.flow_analysis_title {
+    height: 22px;
+    line-height: 22px;
+    font-size: 16px;
+    border-left: 3px solid #5ce59d;
+    padding-left: 8px;
+    color: #fff;
+    font-weight: 500;
+    margin: 16px 0 40px 32px;
+}
+
+.flow_analysis_page {
+    width: 94%;
+    height: 570px;
+    border: 1px solid #67749a;
+    margin: 0 auto;
+    padding: 34px 30px;
+    box-sizing: border-box;
+}
+
+.flow_analysis_pageLeft {
+    width: 26%;
+    height: 498px;
+}
+
+.flow_analysis_pageMiddle {
+    width: 26%;
+    height: 498px;
+    line-height: 498px;
+    font-size: 14px;
+    color: #fff;
+    background: #5c82be;
+}
+
+.flow_analysis_down{
+    clear: both;
+    width: 100%;
+    float: left;
+}
+
+.flow_page_arrow {
+    width: 11%;
+    height: 84px;
+    margin-top: 200px;
+}
+
+.flowPage_arrow {
+    width: 74px;
+    height: 86px;
+    line-height: 86px;
+    font-size: 14px;
+    color: #fff;
+    background: url(../imgs/flow_analysis_arrow.png) no-repeat;
+    margin: 0 auto;
+}
+
+.flow_analysis_pageBlock {
+    width: 100%;
+    font-size: 14px;
+    color: #fff;
+    background: #5c82be;
+}
+
+.pageBlock1 {
+    height: 158px;
+    padding-top: 62px;
+    margin-bottom: 24px;
+}
+
+.pageBlock2 {
+    height: 88px;
+    padding-top: 26px;
+    margin-bottom: 24px;
+}
+
+.pageBlock3 {
+    height: 120px;
+    padding-top: 36px;
+    margin-bottom: 24px;
+}
+
+.pageBlock4 {
+    height: 60px;
+    padding-top: 10px;
+}
+
+.pageBlock5 {
+    height: 88px;
+    padding-top: 26px;
+    margin-bottom: 24px;
+}
+
+.pageBlock6 {
+    height: 158px;
+    padding-top: 62px;
+    margin-bottom: 24px;
+}
+
+.pageBlock7 {
+    height: 120px;
+    padding-top: 36px;
+    margin-bottom: 24px;
+}
+
+.pageBlock8 {
+    height: 60px;
+    padding-top: 10px;
+}
+
+.flow_analysis_title1 {
+    height: 22px;
+    line-height: 22px;
+    font-size: 16px;
+    border-left: 3px solid #5ce59d;
+    padding-left: 8px;
+    color: #fff;
+    font-weight: 500;
+    margin: 24px 0 30px 32px;
+}
+
+.flowAnalysis_Table {
+    width: 94%;
+    height: 292px;
+    margin: 0 auto;
+    border: 1px solid #67749a;
+}
+
+.flowAnalysis_Table thead tr {
+    width: 100%;
+    height: 46px;
+    background: #444c63;
+    font-size: 16px;
+    color: #fff;
+}
+
+.flowAnalysis_Table thead tr th {
+    font-weight: 200;
+    text-align: center;
+}
+
+.flowAnalysis_Table tbody tr {
+    width: 100%;
+    height: 46px;
+    color: #fff;
+    text-align: center;
+    font-size: 12px;
+}
+
+.flowAnalysis_Table tbody tr:nth-child(even) {
+    background: #444c63;
+}
+
+
+.page_analysis_content {
+    width: 100%;
+    height: 650px;
+    background: #3b4252;
+}
+
+.page_analysis_up {
+    width: 100%;
+    height: 82px;
+    background: #444c63;
+    border-bottom: 1px solid #5f687f;
+}
+
+.flow_analysis_titleBtn {
+    width: 270px;
+    height: 38px;  
+    margin-top: 20px;
+}
+
+.flowAnalysis_input{
+	width: 200px;
+	height: 30px;
+	border: 1px solid #7886a9;
+    border-radius: 8px;
+    background: transparent;
+    text-align: center;
+    padding-right: 32px;
+    color: #fff;
+}
+
+.flowAnalysis_inputSearch{
+    font-size: 16px;
+    margin-left: -38px;
+    color: #7886a9;
+}
+
+.flowAnalysis_altDownload{
+	font-size: 16px;
+    color: #7886a9;
+    margin-left: -10px;
+}
+.altDownload{
+	display: inline-block;
+    margin-left: 10px;
+    width: 20px;
+    height: 22px;
+    border: 1px solid #7786a9;
+}
+
+.altDownload_color{
+	color:#5ce59d;
+	cursor: pointer;
+}
+
+.flowAnalysis_TableArrow{
+	display: inline-block;
+	width: 12px;
+	height: 20px;
+	background: url(../imgs/arrow_upDown.png) no-repeat;
+}

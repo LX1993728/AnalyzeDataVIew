@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anrong.wulan.admin.dao.ANALYPageMapper">
+
+	<select id="getPagesByCriteria" parameterType="com.anrong.wulan.admin.vo.ANALYPageVO"
+		resultType="com.anrong.wulan.admin.po.AnalyzePage">
+		SELECT
+			p1.pageCode AS pageCode,
+			p1. NAME AS `name`,
+			AVG(p1.stayAverage)stayAverage,
+			AVG(p1.departureRate)departureRate,
+			p2.totalNumber AS totalNumber,
+			p2.totalTimes AS totalTimes,
+			IF(p3.totalNumber > 0,TRUNCATE(p2.totalNumber / p3.totalNumber,4),0.0)AS totalNumberProportion,
+			IF(p3.totalTimes > 0,TRUNCATE(p2.totalTimes / p3.totalTimes, 4),0.0)AS totalTimesProportion
+		FROM
+			ANALYZE_PAGE p1
+		LEFT JOIN(
+			SELECT
+				NAME,
+				SUM(totalNumber)AS totalNumber,
+				SUM(totalTimes)AS totalTimes
+			FROM
+				ANALYZE_PAGE
+			WHERE
+				currentDay BETWEEN #{beginDate,jdbcType=DATE}
+			AND #{endDate,jdbcType=DATE}
+			GROUP BY
+				pageCode
+		)p2 ON p2. NAME = p1. NAME
+		JOIN(
+			SELECT
+				SUM(totalNumber)AS totalNumber,
+				SUM(totalTimes)AS totalTimes
+			FROM
+				ANALYZE_PAGE
+			WHERE
+				currentDay BETWEEN #{beginDate,jdbcType=DATE}
+			AND #{endDate,jdbcType=DATE}
+		)p3
+		WHERE
+			currentDay BETWEEN #{beginDate,jdbcType=DATE}
+		AND #{endDate,jdbcType=DATE}
+		GROUP BY
+			pageCode
+		ORDER BY
+			NAME
+		LIMIT ${offset},${pageSize};
+	</select>
+	
+	<select id="getPagesCountByCriteria" parameterType="com.anrong.wulan.admin.vo.ANALYPageVO"
+		resultType="java.lang.Long">
+		SELECT
+			COUNT(DISTINCT pageCode)
+		FROM
+			ANALYZE_PAGE p1
+		WHERE
+			currentDay BETWEEN #{beginDate,jdbcType=DATE}
+		AND #{endDate,jdbcType=DATE};
+	</select>
+</mapper>

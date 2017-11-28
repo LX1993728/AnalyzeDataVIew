@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.NewStartDetailDataMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.NewStartDetailData">
+		<result column="date1" property="date" jdbcType="VARCHAR" />
+		<result column="newUserCount" property="newUserCount" jdbcType="INTEGER" />
+		<result column="activeUser" property="activeUser" jdbcType="INTEGER" />
+		<result column="totalUserCount" property="totalUserCount"
+			jdbcType="INTEGER" />
+		<result column="startCount" property="startCount" jdbcType="INTEGER" />
+		<result column="avgUserTime" property="avgUserTime" jdbcType="DOUBLE" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		date1,newUserCount,activeUser,totalUserCount,startCount,avgUserTime
+	</sql>
+
+	<!-- 查询总数据 -->
+	<select id="queryDetailDatas" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		SELECT
+		DISTINCT date1,
+		newUserCount,
+		activeUser,
+		startCount,
+		avgUserTime,
+		totalUserCount
+		FROM
+		(
+		SELECT
+		statistics_date date1,
+		sum(NEW_USER)
+		newUserCount,
+		APP_KEY,
+		LOG_TYPE
+		logtype1
+		FROM
+		NEW_USER_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		date1 BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS a
+		LEFT JOIN (
+		SELECT
+		statistics_date date2,
+		sum(ACTIVE_USER) activeUser,
+		APP_KEY app2,
+		LOG_TYPE
+		logtype2
+		FROM
+		ACTIVE_USER_HOUR_END
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		statistics_date
+		HAVING
+		date2 BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS b ON a.date1 =
+		date2
+		LEFT JOIN
+		(SELECT
+		STATISTICS_DATE startDate,
+		START startCount
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		startDate BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS start ON a.date1 = startDate
+		LEFT JOIN
+		(SELECT
+		STATISTICS_DATE
+		avgDate,
+		round(DURATION_TIME / USE_NUM,2) AS avgUserTime
+		FROM
+		DURATION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		avgDate BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS avgTime ON
+		a.date1 = avgDate
+		LEFT JOIN
+		(SELECT
+		STATISTICS_DATE as date5,
+		(SELECT
+		sum(NEW_USER) FROM
+		NEW_USER_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		AND STATISTICS_DATE &lt;= date5) as
+		totalUserCount
+		FROM
+		NEW_USER_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		) AS e
+		ON a.date1 = date5 order
+		by date1 DESC
+	</select>
+
+	<!-- 分页查询数据 -->
+	<select id="queryDetailDataByPage" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		DISTINCT date1,
+		newUserCount,
+		activeUser,
+		startCount,
+		avgUserTime,
+		totalUserCount
+		FROM
+		(
+		SELECT
+		statistics_date date1,
+		sum(NEW_USER)
+		newUserCount,
+		APP_KEY,
+		LOG_TYPE
+		logtype1
+		FROM
+		NEW_USER_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		date1 BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS a
+		LEFT JOIN (
+		SELECT
+		statistics_date date2,
+		sum(ACTIVE_USER) activeUser,
+		APP_KEY app2,
+		LOG_TYPE
+		logtype2
+		FROM
+		ACTIVE_USER_HOUR_END
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		statistics_date
+		HAVING
+		date2 BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS b ON a.date1 =
+		date2
+		LEFT JOIN
+		(SELECT
+		STATISTICS_DATE startDate,
+		START startCount
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		startDate BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS start ON a.date1 = startDate
+		LEFT JOIN
+		(SELECT
+		STATISTICS_DATE avgDate,
+		round(DURATION_TIME / USE_NUM,2) AS avgUserTime
+		FROM
+		DURATION_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		STATISTICS_DATE
+		HAVING
+		avgDate BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		) AS avgTime ON
+		a.date1 = avgDate
+		LEFT JOIN
+		(SELECT
+		STATISTICS_DATE as date5,
+		(SELECT
+		sum(NEW_USER) FROM
+		NEW_USER_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		AND STATISTICS_DATE &lt;= date5) as
+		totalUserCount
+		FROM
+		NEW_USER_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		) AS e
+		ON a.date1 = date5 order
+		by date1 DESC
+		limit ${start},${size}
+	</select>
+
+
+	<sql id="Where_Column_AppKeyOrLogType">
+		<where>
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+
+</mapper>

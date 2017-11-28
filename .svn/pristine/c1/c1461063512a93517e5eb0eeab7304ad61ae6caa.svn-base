@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.CoreEventMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.CoreEvent">
+		<result column="date" property="date" jdbcType="VARCHAR" />
+		<result column="eventId" property="eventId" jdbcType="INTEGER" />
+		<result column="eventNodeId" property="eventNodeId" jdbcType="INTEGER" />
+		<result column="eventName" property="eventName" jdbcType="VARCHAR" />
+		<result column="eventPath" property="eventPath" jdbcType="VARCHAR" />
+		<result column="eventNode" property="eventNode" jdbcType="VARCHAR" />
+		<result column="eventTrigger" property="eventTrigger" jdbcType="INTEGER" />
+		<result column="reach" property="reach" jdbcType="INTEGER" />
+		<result column="countUser" property="countUser" jdbcType="INTEGER" />
+		<result column="reachUser" property="reachUser" jdbcType="INTEGER" />
+		<result column="pathNum" property="pathNum" jdbcType="INTEGER" />
+		<result column="reachPathNum" property="reachPathNum" jdbcType="INTEGER" />
+		<result column="FINISH_NUBNER" property="finishNumber"
+			jdbcType="INTEGER" />
+		<result column="EVENT_NUBNER" property="eventNumber" jdbcType="INTEGER" />
+		<result column="TYPE" property="type" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		eventId,eventNodeId,eventName,eventPath,eventNode,eventTrigger,reach,countUser,reachUser,pathNum,reachPathNum,type
+	</sql>
+	<!-- 查询事件下所有详情 -->
+	<select id="queryNodeCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		EVENT_ID eventId,
+		EVENT_NODEID eventNodeId,
+		EVENT_NAME eventName,
+		EVENT__PATH eventPath,
+		EVENT_NODE eventNode,
+		sum(EVENT_TRIGGER)
+		eventTrigger,
+		sum(EVENT_REACH) reach,
+		sum(EVENT_USER) countUser,
+		sum(REACH_USER) reachUser
+		FROM
+		CORE_EVENT
+		<include refid="Where_Column_AppKeyOrLogType" />
+		AND EVENT_ID = #{eventId}
+		GROUP BY EVENT_NODEID
+		ORDER BY EVENT_NODEID
+		ASC
+	</select>
+	<!-- 分页查询事件 节点详情 -->
+	<select id="queryNode" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		SELECT
+		EVENT_ID eventId,
+		EVENT_NODEID eventNodeId,
+		EVENT_NAME eventName,
+		EVENT__PATH eventPath,
+		EVENT_NODE eventNode,
+		sum(EVENT_TRIGGER)
+		eventTrigger,
+		sum(EVENT_REACH) reach,
+		sum(EVENT_USER) countUser,
+		sum(REACH_USER) reachUser
+		FROM
+		CORE_EVENT
+		<include refid="Where_Column_AppKeyOrLogType" />
+		AND EVENT_ID = #{eventId}
+		GROUP BY EVENT_NODEID
+		ORDER BY EVENT_NODEID
+		ASC
+		limit ${start},${size}
+	</select>
+	<!--查询事件所有ID及名称 -->
+	<select id="queryEventId" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		EVENT_ID eventId,
+		EVENT_NAME eventName
+		FROM
+		CORE_EVENT
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY EVENT_ID
+		ORDER BY EVENT_ID ASC
+	</select>
+	<!-- 查询事件echarts所需数据 -->
+	<select id="queryCharts" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		EVENT_NODE eventNode,
+		sum(EVENT_TRIGGER) eventTrigger,
+		sum(EVENT_REACH) reach,
+		sum(EVENT_USER) countUser,
+		sum(REACH_USER)
+		reachUser
+		FROM
+		CORE_EVENT
+		<include refid="Where_Column_AppKeyOrLogType" />
+		AND EVENT_ID = #{eventId}
+		GROUP BY EVENT_NODEID
+		ORDER BY EVENT_NODEID
+		ASC
+	</select>
+
+	<select id="queryPathCharts" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		EVENT__PATH eventPath,
+		sum(EVENT_PATH_NUM) pathNum,
+		sum(EVENT_PATH_REACH_NUM) reachPathNum,
+		EVENT_NAME as eventName
+		FROM
+		CORE_EVENT
+		<include refid="Where_Column_AppKeyOrLogType" />
+		AND EVENT_ID = #{eventId}
+		GROUP BY EVENT__PATH
+		ORDER BY EVENT_PATH_NUM
+		DESC
+	</select>
+
+	<!--核心事件查询 -->
+	<select id="coreEventByParam" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		EVENT_NAME eventName,
+		STATISTICS_DATE date,
+		SUM(EVENT_NUBNER) eventNumber,
+		SUM(FINISH_NUBNER) finishNumber
+		FROM
+		CORE_EVENT
+		WHERE
+		TYPE = 'core'
+		GROUP BY EVENT_NAME;
+	</select>
+	<select id="eventManagerCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		EVENT_ID eventId,
+		EVENT_NAME eventName,
+		STATISTICS_DATE date,
+		TYPE
+		FROM
+		CORE_EVENT
+		GROUP
+		BY EVENT_NAME ORDER BY date DESC
+	</select>
+	<select id="eventManagerDetail" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		EVENT_ID eventId,
+		EVENT_NAME eventName,
+		STATISTICS_DATE date,
+		TYPE
+		FROM
+		CORE_EVENT
+		GROUP
+		BY EVENT_NAME ORDER BY date DESC limit ${start},${size}
+	</select>
+	
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+		select EVENT_ID eventId, TYPE type from CORE_EVENT where EVENT_ID=#{eventId,jdbcType=INTEGER}
+	</select>
+	
+	<update id="updateCoreEvent">
+		UPDATE  CORE_EVENT  SET TYPE=#{type,jdbcType=VARCHAR}
+		where EVENT_ID=#{eventId,jdbcType=INTEGER}
+	</update>
+	
+	<delete id="deleteEvent" parameterType="java.lang.Integer">
+		DELETE FROM CORE_EVENT WHERE EVENT_ID = #{eventId,jdbcType=INTEGER}
+	</delete>
+	
+	<sql id="Where_Column_AppKeyOrLogType">
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

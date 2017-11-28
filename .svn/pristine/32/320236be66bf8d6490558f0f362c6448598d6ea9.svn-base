@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.TotalUserHourMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.TotalUserHour">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="serverid" property="serverid" jdbcType="VARCHAR" />
+		<result column="log_type" property="logType" jdbcType="VARCHAR" />
+		<result column="app_key" property="appKey" jdbcType="VARCHAR" />
+		<result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+		<result column="total_user" property="totalUser" jdbcType="INTEGER" />
+		<result column="statistics_sign" property="statisticsSign"
+			jdbcType="SMALLINT" />
+		<result column="statistics_date" property="statisticsDate"
+			jdbcType="TIMESTAMP" />
+		<result column="totalUserCount" property="totalUserCount"
+			jdbcType="INTEGER" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, SERVERID, LOG_TYPE, APP_KEY, APP_VERSION,
+		STATISTICS_SIGN, TOTAL_USER, STATISTICS_DATE
+	</sql>
+	<sql id="Where_Column_AppKeyOrLogType">
+		<where>
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	<!-- 近日概括累计用户 -->
+	<select id="queryTotalUserHour" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT TOTAL_USER AS totalUserCount FROM TOTAL_USER_HOUR
+		<where>
+			<if test="statisticsDate==0">
+				STATISTICS_SIGN =
+				(SELECT
+				MAX(STATISTICS_SIGN)
+				FROM
+				TOTAL_USER_HOUR
+				WHERE STATISTICS_DATE =CURDATE()
+				AND APP_KEY =
+				#{appKey,jdbcType=VARCHAR}
+				AND UPPER(LOG_TYPE) IN
+				<if test="logType!=null">
+					(#{logType,jdbcType=VARCHAR})
+				</if>
+				<if test="logTypes!=null and logTypes.length>0">
+					<foreach collection="logTypes" item="item" index="index"
+						open="(" separator="," close=")">
+						#{item}
+					</foreach>
+				</if>
+				)
+				AND STATISTICS_DATE =CURDATE()
+			</if>
+			<if test="statisticsDate==1">
+				STATISTICS_SIGN =
+				(SELECT
+				MAX(STATISTICS_SIGN)
+				FROM
+				TOTAL_USER_HOUR
+				WHERE STATISTICS_DATE =DATE_SUB(CURDATE(),INTERVAL #{statisticsDate}
+				DAY)
+				AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+				AND UPPER(LOG_TYPE) IN
+				<if test="logType!=null">
+					(#{logType,jdbcType=VARCHAR})
+				</if>
+				<if test="logTypes!=null and logTypes.length>0">
+					<foreach collection="logTypes" item="item" index="index"
+						open="(" separator="," close=")">
+						#{item}
+					</foreach>
+				</if>
+				)
+				AND STATISTICS_DATE =DATE_SUB(CURDATE(),INTERVAL
+				#{statisticsDate} DAY)
+			</if>
+			<if test="statisticsDate==3">
+				STATISTICS_DATE = DATE_SUB(CURDATE(),INTERVAL 1 DAY)
+				AND
+				STATISTICS_SIGN = DATE_FORMAT(CURRENT_TIME,'%H')
+			</if>
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 应用摘要 累计用户总数 -->
+	<select id="queryAppTotalUserCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select max(A.TOTAL_USER) as TOTAL_USER
+		from (
+		SELECT TOTAL_USER
+		FROM
+		TOTAL_USER_HOUR
+		<where>
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<!-- ORDER BY STATISTICS_DATE DESC LIMIT 1 -->
+		</where>
+		) A
+	</select>
+	<!-- 30日数据趋势 累计用户 -->
+	<select id="selectRecordMonth" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select A.* from (
+		SELECT
+		TOTAL_USER AS totalUserCount ,
+		STATISTICS_DATE,STATISTICS_SIGN
+		FROM TOTAL_USER_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		AND STATISTICS_DATE BETWEEN DATE_SUB(CURDATE(),INTERVAL 30 DAY) AND
+		DATE_SUB(CURDATE(),INTERVAL 0 DAY)
+		order by STATISTICS_SIGN DESC
+		) A
+		GROUP BY
+		DATE_FORMAT(A.STATISTICS_DATE,'%YYYY-%MM-%DD')
+		order by
+		A.STATISTICS_DATE
+	</select>
+	<!-- 累计用户 -->
+	<select id="queryTotalUser" resultMap="BaseResultMap">
+		select A.* from (
+		SELECT
+		statistics_date AS statisticsDate,
+		TOTAL_USER AS
+		totalUserCount
+		FROM TOTAL_USER_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		order by STATISTICS_SIGN DESC
+		) A
+		GROUP BY A.statisticsDate
+		order by
+		A.statisticsDate
+	</select>
+
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

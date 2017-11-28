@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.RoleMapper">
+  
+  <resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.Role">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="role_name" jdbcType="VARCHAR" property="roleName" />
+    <result column="role_sign" jdbcType="VARCHAR" property="roleSign" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, role_name, role_sign, description
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from role
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from role
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.anrong.wulan.admin.po.Role">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into role (role_name, role_sign, description
+      )
+    values (#{roleName,jdbcType=VARCHAR}, #{roleSign,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.anrong.wulan.admin.po.Role">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into role
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="roleName != null">
+        role_name,
+      </if>
+      <if test="roleSign != null">
+        role_sign,
+      </if>
+      <if test="description != null">
+        description,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="roleName != null">
+        #{roleName,jdbcType=VARCHAR},
+      </if>
+      <if test="roleSign != null">
+        #{roleSign,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.anrong.wulan.admin.po.Role">
+    update role
+    <set>
+      <if test="roleName != null">
+        role_name = #{roleName,jdbcType=VARCHAR},
+      </if>
+      <if test="roleSign != null">
+        role_sign = #{roleSign,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.anrong.wulan.admin.po.Role">
+    update role
+    set role_name = #{roleName,jdbcType=VARCHAR},
+      role_sign = #{roleSign,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  
+  <!-- 通过用户id 查询用户 拥有的角色 -->
+    <select id="selectRolesByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT r.* FROM role r LEFT JOIN user_role ur ON r.id = ur.role_id
+        WHERE ur.user_id = #{id,jdbcType=BIGINT}
+    </select>
+    
+    
+     <!-- 分页查询 -->
+   <select id="selectPage" parameterType="map" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from role
+    <where>
+     <if test="roleName != null">
+       role_name = #{roleName,jdbcType=VARCHAR}
+      </if>
+      <if test="roleSign != null">
+        and role_sign = #{roleSign,jdbcType=VARCHAR}
+      </if>
+      <if test="description != null">
+        and description = #{description,jdbcType=VARCHAR}
+      </if>
+      <if test="id != null">
+    	and id = #{id,jdbcType=BIGINT}
+      </if>
+    </where> 
+    </select>
+    
+    <select id="selectByRoleSign" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select 
+    	<include refid="Base_Column_List" />
+    	from role
+    	where role_sign = #{roleSign,jdbcType=VARCHAR}
+    </select>
+    
+    
+     <select id="selectAll" resultMap="BaseResultMap">
+        select 
+    	<include refid="Base_Column_List" />
+    	from role 
+    </select>
+    
+</mapper>

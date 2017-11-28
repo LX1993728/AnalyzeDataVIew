@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anrong.wulan.admin.dao.SYSPermissionAndMenuMapperCustom">
+
+<!-- 抽取公共SQL片段 -->
+<sql id="queryMenusByUserId">
+	<if test="#{0}!=null">
+	   and id IN(
+			SELECT
+				menuid
+			FROM
+				SYS_ROLE_MENU
+			WHERE
+				roleid IN(
+					SELECT
+						roleid
+					FROM
+						SYS_USER_ROLE
+					WHERE
+						userid = #{0}
+				)
+		) ;
+	</if>
+</sql>
+<sql id="queryMenuForOne">
+  and  pid =1 
+</sql>
+<sql id="queryMenuForTwo">
+  and  pid = #{1}
+</sql>
+
+<!-- 根据用户id查询菜单 -->
+<select id="findMenuListByUserId" parameterType="int" resultType="com.anrong.wulan.admin.po.SYSMenu">
+	 SELECT
+		*
+	FROM
+		SYS_MENU
+	<where>
+		<include refid="queryMenusByUserId"></include>
+	</where>
+		
+</select>
+<!-- 根据用户ID查询他所具有的一级菜单 -->
+<select id="findLevelOneMenusByUserid"  parameterType="int"  resultType="com.anrong.wulan.admin.po.SYSMenu">
+    SELECT
+		*
+	FROM
+		SYS_MENU 
+	<where>
+		<include refid="queryMenuForOne"></include>
+		<include refid="queryMenusByUserId"></include>
+	</where>
+</select>
+<!-- 根据用户ID和一级菜单的ID查询他所具有的二级菜单 -->
+<select id="findLevelTwoMenusbyUserIdAndParentId"  parameterType="int" resultType="com.anrong.wulan.admin.po.SYSMenu">
+ 	 SELECT
+		*
+	FROM
+		SYS_MENU 
+	<where>
+		<include refid="queryMenuForTwo"></include>
+		<include refid="queryMenusByUserId"></include>
+	</where>
+</select>
+
+<!-- 根据用户id查询权限资源 -->
+<select id="findPermissionListByUserId" parameterType="int" resultType="com.anrong.wulan.admin.po.SYSPermission">
+   SELECT
+	*
+	FROM
+		SYS_PERMISSION
+	WHERE
+		id IN(
+			SELECT
+				perid
+			FROM
+				SYS_ROLE_PERMISSION
+			WHERE
+				roleid IN(
+					SELECT
+						roleid
+					FROM
+						SYS_USER_ROLE
+					WHERE
+						userid =  #{userid}
+				)
+		);
+</select>
+
+
+</mapper>

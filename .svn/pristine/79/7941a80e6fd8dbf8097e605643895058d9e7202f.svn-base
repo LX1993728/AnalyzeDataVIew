@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.ChannelPromotionMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.ChannelPromotion">
+		<result column="channelName" property="channelName" jdbcType="VARCHAR" />
+		<result column="channelUserCount" property="channelUserCount"
+			jdbcType="INTEGER" />
+		<result column="channelRetention" property="channelRetention"
+			jdbcType="INTEGER" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		channelName,channelUserCount,channelRetention
+	</sql>
+	
+	<select id="queryUserCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		CHANNEL_NAME channelName,
+		sum(CHANNEL_USER) channelUserCount,
+		sum(CHANNEL_RETENTION) channelRetention
+		FROM
+		CHANNEL_PROMOTION
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY
+		CHANNEL_NAME
+	</select>
+	
+	<select id="reportChannel" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		SELECT
+		CHANNEL_NAME channelName,
+		SUM(CHANNEL_USER) channelUserCount
+		FROM
+		CHANNEL_PROMOTION
+		GROUP BY
+		CHANNEL_NAME
+	
+	</select>
+	
+	<sql id="Where_Column_AppKeyOrLogType">
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

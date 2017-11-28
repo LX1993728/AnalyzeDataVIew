@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd    
+    http://www.springframework.org/schema/tx  
+    http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 数据源配置 -->
+	<!-- 主数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${master.jdbc.driverClassName}" />
+		<property name="url" value="${master.jdbc.url}" />
+		<property name="username" value="${master.jdbc.userName}" />
+		<property name="password" value="${master.jdbc.password}" />
+		<!--initialSize: 初始化连接 -->
+		<property name="initialSize" value="${master.dbcp.initialSize}" />
+		<!--maxActive: 最大连接数量 -->
+		<property name="maxActive" value="${master.dbcp.maxActive}" />
+		<!--maxIdle: 最大空闲连接 -->
+		<property name="maxIdle" value="${master.dbcp.maxIdle}" />
+		<!--minIdle: 最小空闲连接 -->
+		<property name="minIdle" value="${master.dbcp.minIdle}" />
+		<property name="defaultAutoCommit" value="false" />
+		<property name="validationQuery" value="SELECT 1" />
+	</bean>
+
+	 
+
+	<!-- 事务管理 use JtaTransactionManager for global tx -->
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 对标注@Transcational注解的Bean进行加工处理，以织入事务管理切面 -->
+	<tx:annotation-driven transaction-manager="txManager" />
+	
+</beans>

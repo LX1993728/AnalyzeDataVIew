@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anrong.wulan.admin.dao.PermissionMenuMapper" >
+  <resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.PermissionMenu" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="permission_id" property="permissionId" jdbcType="BIGINT" />
+    <result column="menu_id" property="menuId" jdbcType="BIGINT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, permission_id, menu_id
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from permission_menu
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from permission_menu
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.anrong.wulan.admin.po.PermissionMenu" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into permission_menu (permission_id, menu_id)
+    values (#{permissionId,jdbcType=BIGINT}, #{menuId,jdbcType=BIGINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.anrong.wulan.admin.po.PermissionMenu" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into permission_menu
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="permissionId != null" >
+        permission_id,
+      </if>
+      <if test="menuId != null" >
+        menu_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="permissionId != null" >
+        #{permissionId,jdbcType=BIGINT},
+      </if>
+      <if test="menuId != null" >
+        #{menuId,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.anrong.wulan.admin.po.PermissionMenu" >
+    update permission_menu
+    <set >
+      <if test="permissionId != null" >
+        permission_id = #{permissionId,jdbcType=BIGINT},
+      </if>
+      <if test="menuId != null" >
+        menu_id = #{menuId,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.anrong.wulan.admin.po.PermissionMenu" >
+    update permission_menu
+    set permission_id = #{permissionId,jdbcType=BIGINT},
+      menu_id = #{menuId,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  
+  <select id="countBySelective" parameterType="com.anrong.wulan.admin.po.PermissionMenu" resultType="int">
+    select  count(0)
+    from permission_menu
+    <where>
+     <if test="menuId != null">
+        menu_id = #{menuId,jdbcType=BIGINT}
+      </if>
+      <if test="permissionId != null">
+       and permission_id = #{permissionId,jdbcType=BIGINT}
+      </if>
+    </where>
+  </select>
+  
+   <delete id="deleteByPermissionId" parameterType="java.lang.Long">
+    delete from permission_menu
+    where permission_id = #{permissionId,jdbcType=BIGINT}
+  </delete>
+</mapper>

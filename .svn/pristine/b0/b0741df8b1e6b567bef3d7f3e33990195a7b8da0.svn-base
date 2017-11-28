@@ -1,0 +1,147 @@
+@charset "UTF-8";
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
+.login_bg {
+    width: 100%;
+    height: 100%;
+    background: url(../imgs/logo_map.jpg) no-repeat;
+    background-size: cover;
+}
+
+.login_logo {
+    width: 18%;
+    height: 24%;
+    background: url(../imgs/login_logo.png) no-repeat;
+    -webkit-background-size: 100%;
+    background-size: 100%;
+    margin-top: 3%;
+    margin-left: 4%;
+}
+
+.login_accountNum {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 36%;
+    height: 50%;
+    background: rgba(169, 169, 169, 0.5);
+    border-radius: 16px;
+}
+
+.login_accountNum_top {
+    width: 100%;
+    height: 18%;
+    margin-top: 6%;
+    color: #fff;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.login_accountNum_main{
+	width: 100%;
+	height: 100%;
+}
+
+.login_accountNum_middle {
+	clear: both;
+    width: 76%;
+    height: 32%;
+    margin: 0 auto;
+    position: relative;
+}
+
+.login_accountNum_middle span{
+	font-size: 20px;
+	color: #cfcfcf;
+}
+
+.text_icon1{
+	position: absolute;
+	top: 14%;
+	left: 4%;
+}
+
+.text_icon2{
+	position: absolute;
+	top: 65%;
+	left: 4%;
+}
+
+.accountNum_text {
+    width: 100%;
+    height: 50%;
+    border-radius: 10px 10px 0 0;
+    background: #fff;
+    border-bottom: 1px solid #cfcfcf;
+    font-size: 18px;
+    padding-left: 13%;
+    box-sizing: border-box;
+}
+
+.accountNum_text1 {
+    width: 100%;
+    height: 50%;
+    border-radius: 0 0 10px 10px;
+    background: #fff;
+    font-size: 18px;
+    padding-left: 13%;
+    box-sizing: border-box;
+}
+
+.login_accountNum_password {
+    width: 76%;
+    height: 8%;
+    margin: 0 auto;
+    margin-top: 6%;
+}
+
+.password_box {
+    width: 16px;
+    height: 16px;
+    margin-top: 1%;
+    cursor: pointer;
+}
+
+.login_accountNum_password span{
+	font-size: 16px;
+	color:#fff;
+	cursor: pointer;
+	padding-left: 10px;
+}
+
+.login_accountNum_btn{
+	width: 76%;
+    height: 16%;
+    background: #52bf89;
+    border-radius: 10px;
+    margin-top: 3%;
+    color: #fff;
+    font-size: 22px;
+    padding-top: 1%;
+    cursor: pointer;
+    box-sizing: border-box;
+    margin-left: 12%;
+}
+
+.Copy-right{
+	font-size: 14px;
+    color: #fff;
+    clear: both;
+    position: fixed;
+    bottom: 4%;
+    left: 32%;
+}
+
+.login-error{
+	color:red;
+	padding-left:13%;
+	margin-top: 4%;
+}

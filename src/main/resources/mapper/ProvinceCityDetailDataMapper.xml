@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.ProvinceCityDetailDataMapper">
+	<resultMap id="BaseResultMap"
+		type="com.anrong.wulan.admin.po.ProvinceCityDetailData">
+		<result column="region1" property="region1" jdbcType="VARCHAR" />
+		<result column="newUserTotal" property="newUserTotal" jdbcType="INTEGER" />
+		<result column="acttiveUserTotal" property="acttiveUserTotal"
+			jdbcType="INTEGER" />
+		<result column="startTimeTotal" property="startTimeTotal"
+			jdbcType="INTEGER" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		region1,newUserTotal,acttiveUserTotal,startTimeTotal
+	</sql>
+	<select id="getProvinceCityData" resultMap="BaseResultMap">
+		SELECT
+		region1,
+		newUserTotal,
+		acttiveUserTotal,
+		startTimeTotal
+		FROM
+		(
+		SELECT
+		PROVINCE AS region1,
+		sum(new_user) AS newUserTotal
+		FROM
+		NEW_USER_REGION_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		REGION1
+		) AS a
+		LEFT JOIN (
+		SELECT
+		PROVINCE AS region3,
+		sum(ACTIVE_USER) AS acttiveUserTotal
+		FROM
+		ACTIVE_USER_REGION_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		region3
+		) AS c ON a.region1 = region3
+		LEFT JOIN (
+		SELECT
+		PROVINCE AS region5,
+		sum(START) AS startTimeTotal
+		FROM
+		START_REGION_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		PROVINCE
+		) AS e ON a.region1 = region5 
+		ORDER BY newUserTotal ASC
+		limit ${start},${size}
+	</select>
+	<select id="getProvinceCityDataCount" resultMap="BaseResultMap">
+		SELECT
+		region1,
+		newUserTotal,
+		acttiveUserTotal,
+		startTimeTotal
+		FROM
+		(
+		SELECT
+		PROVINCE AS region1,
+		sum(new_user) AS newUserTotal
+		FROM
+		NEW_USER_REGION_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		region1
+		) AS a
+		LEFT JOIN (
+		SELECT
+		PROVINCE AS region3,
+		sum(ACTIVE_USER) AS acttiveUserTotal
+		FROM
+		ACTIVE_USER_REGION_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		region3
+		) AS c ON a.region1 = region3
+		LEFT JOIN (
+		SELECT
+		PROVINCE AS region5,
+		sum(START) AS startTimeTotal
+		FROM
+		START_REGION_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		PROVINCE
+		) AS e ON a.region1 = region5 ORDER BY newUserTotal ASC
+	</select>
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

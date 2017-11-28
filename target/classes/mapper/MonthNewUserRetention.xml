@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.MonthNewUserRetentionMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.MonthNewUserRetention">
+		<result column="date" property="date" jdbcType="VARCHAR" />
+		<result column="monthNewUser" property="monthNewUser" jdbcType="INTEGER" />
+		<result column="oneMonth" property="oneMonth" jdbcType="DOUBLE" />
+		<result column="twoMonth" property="twoMonth" jdbcType="DOUBLE" />
+		<result column="threeMonth" property="threeMonth" jdbcType="DOUBLE" />
+		<result column="fourMonth" property="fourMonth" jdbcType="DOUBLE" />
+		<result column="fiveMonth" property="fiveMonth" jdbcType="DOUBLE" />
+		<result column="sixMonth" property="sixMonth" jdbcType="DOUBLE" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		date,monthNewUser,oneMonth,twoMonth,threeMonth,fourMonth,fiveMonth,sixMonth
+	</sql>
+	<select id="queryRetentionCount" parameterType="java.lang.Long" resultMap="BaseResultMap">
+	SELECT
+		STATISTICS_DATE date,
+		DATE_FORMAT(STATISTICS_DATE,'%Y-%m') date,
+		SUM(NEW_USER) monthNewUser,
+		round((SUM(ONE_MONTH_RETENTION) /
+		SUM(NEW_USER)) * 100,2) oneMonth,
+		round((SUM(TWO_MONTH_RETENTION) / SUM(NEW_USER)) *
+		100,2) twoMonth,
+		round((SUM(THREE_MONTH_RETENTION) / SUM(NEW_USER)) * 100,2)
+		threeMonth,
+		round((SUM(FOUR_MONTH_RETENTION) / SUM(NEW_USER)) * 100,2) fourMonth,
+		round((SUM(FIVE_MONTH_RETENTION) / SUM(NEW_USER)) * 100,2) fiveMonth,
+		round((SUM(SIX_MONTH_RETENTION) / SUM(NEW_USER)) * 100,2) sixMonth
+		FROM
+		NEW_USER_RETENTION_MONTH
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY date
+		ORDER BY date DESC
+	</select>
+	<select id="queryRetention" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		SELECT
+		DATE_FORMAT(STATISTICS_DATE,'%Y-%m') date,
+		SUM(NEW_USER) monthNewUser,
+		round((SUM(ONE_MONTH_RETENTION) /
+		SUM(NEW_USER)) * 100,2) oneMonth,
+		round((SUM(TWO_MONTH_RETENTION) / SUM(NEW_USER)) *
+		100,2) twoMonth,
+		round((SUM(THREE_MONTH_RETENTION) / SUM(NEW_USER)) * 100,2)
+		threeMonth,
+		round((SUM(FOUR_MONTH_RETENTION) / SUM(NEW_USER)) * 100,2) fourMonth,
+		round((SUM(FIVE_MONTH_RETENTION) / SUM(NEW_USER)) * 100,2) fiveMonth,
+		round((SUM(SIX_MONTH_RETENTION) / SUM(NEW_USER)) * 100,2) sixMonth
+		FROM
+		NEW_USER_RETENTION_MONTH
+		<include refid="Where_Column_AppKeyOrLogType" />
+		GROUP BY date
+		ORDER BY date DESC limit ${start},${size}
+	</select>
+	<sql id="Where_Column_AppKeyOrLogType">
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

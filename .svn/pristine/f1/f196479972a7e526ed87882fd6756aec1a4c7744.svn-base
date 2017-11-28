@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anrong.wulan.admin.dao.SYSUserCustomMapper">
+	<resultMap id="UserResultMap" type="com.anrong.wulan.admin.po.User">
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="username" jdbcType="VARCHAR" property="username" />
+		<result column="password" jdbcType="CHAR" property="password" />
+		<result column="state" jdbcType="VARCHAR" property="state" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+	</resultMap>
+	<!-- 抽取公共SQL片段 -->
+	<sql id="query_User_where">
+		<if test="username!=null and username.trim().length() > 0">
+			and username like '%${username.trim()}%'
+		</if>
+		<if test="roleId!= null and roleId != -1">
+			and u.id in (select userid from SYS_USER_ROLE where
+			userid
+			= u.id and roleid = #{roleId})
+		</if>
+	</sql>
+	<select id="findUserCountByCriteria" parameterType="com.anrong.wulan.admin.vo.SYSUserVO"
+		resultType="java.lang.Integer">
+		select count(*) from USER u
+		<where>
+			<include refid="query_User_where" />
+		</where>
+	</select>
+
+	<select id="findUserListByCriteria" parameterType="com.anrong.wulan.admin.vo.SYSUserVO"
+		resultMap="UserResultMap">
+		select id, username, state, create_time from USER u
+		<where>
+			<include refid="query_User_where" />
+		</where>
+		order by u.id asc limit #{offset},#{pageSize} 
+	</select>
+	
+	<select id="getCountByUserName" parameterType="java.lang.String" resultType="java.lang.Long">
+	   select count(id) from USER where username = #{userName}
+	</select>
+
+</mapper>

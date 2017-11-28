@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.StartHourMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.StartHour">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="serverid" property="serverid" jdbcType="VARCHAR" />
+		<result column="log_type" property="logType" jdbcType="VARCHAR" />
+		<result column="app_key" property="appKey" jdbcType="VARCHAR" />
+		<result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+		<result column="start" property="start" jdbcType="INTEGER" />
+		<result column="statistics_sign" property="statisticsSign"
+			jdbcType="SMALLINT" />
+		<result column="statistics_date" property="statisticsDate"
+			jdbcType="TIMESTAMP" />
+		<result column="startCount" property="startCount" jdbcType="INTEGER" />
+		<result column="totalStart" property="totalStart" jdbcType="INTEGER" />
+		<result column="thirtyStart" property="thirtyStart" jdbcType="INTEGER" />
+		<result column="starttimeAvg" property="starttimeAvg" jdbcType="DOUBLE" />
+		<result column="startProportion" property="startProportion"
+			jdbcType="DOUBLE" />
+		<result column="highTimeStartPer" property="highTimeStartPer"
+			jdbcType="DOUBLE" />
+		<result column="lowTimeStartPer" property="lowTimeStartPer"
+			jdbcType="DOUBLE" />
+		<result column="StartBySignPerTotal" property="StartBySignPerTotal"
+			jdbcType="DOUBLE" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, SERVERID, LOG_TYPE, APP_KEY, APP_VERSION,
+		START,STATISTICS_SIGN,STATISTICS_DATE
+	</sql>
+	<!-- 近日概括 -->
+	<sql id="Where_Column">
+		<where>
+			<if test="statisticsDate==0 or statisticsDate==1">
+				STATISTICS_DATE = DATE_SUB(CURDATE(),INTERVAL
+				#{statisticsDate} DAY)
+			</if>
+
+			<if test="statisticsDate==3">
+				STATISTICS_DATE = DATE_SUB(CURDATE(),INTERVAL 1 DAY)
+				AND
+				STATISTICS_SIGN &lt;
+				DATE_FORMAT(CURRENT_TIME,'%H')
+			</if>
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	<!-- 时段分析 -->
+	<sql id="Where_Column_AppKeyOrLogType">
+		<where>
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	<!-- 近日概括启动次数 -->
+	<select id="queryStartHour" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT SUM(START) AS startCount FROM START_HOUR
+		<include refid="Where_Column" />
+	</select>
+	<!-- 应用摘要 启动总数 -->
+	<select id="queryAppAllStartCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT SUM(START) AS totalStart FROM START_HOUR
+		<where>
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 应用摘要 30启动次数 -->
+	<select id="queryThirtyStartCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT SUM(START) AS thirtyStart FROM START_HOUR
+		<where>
+			STATISTICS_DATE BETWEEN DATE_SUB(CURDATE(),INTERVAL 30 DAY) AND
+			DATE_SUB(CURDATE(),INTERVAL 0 DAY)
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 时段分析启动次数 -->
+	<select id="selectRecord" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select ID,START,STATISTICS_SIGN,STATISTICS_DATE FROM START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		AND STATISTICS_DATE = DATE_SUB(CURDATE(),INTERVAL
+		#{statisticsDate}
+		DAY)
+	</select>
+	<!--30日数据趋势 启动次数 -->
+	<select id="selectRecordMonth" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT ID,SUM(START) as startCount ,STATISTICS_SIGN,STATISTICS_DATE
+		FROM START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType" />
+		AND STATISTICS_DATE BETWEEN
+		DATE_SUB(CURDATE(),INTERVAL 30 DAY)
+		AND
+		DATE_SUB(CURDATE(),INTERVAL 0 DAY)
+		GROUP BY
+		DATE_FORMAT(STATISTICS_DATE,'%YYYY-%MM-%DD')
+	</select>
+
+	<select id="queryTop10Start" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select ID,sum(START) as startCount ,STATISTICS_SIGN,STATISTICS_DATE
+		from START_HOUR
+		<where>
+			<if test="statisticsDate==0">
+				statistics_date = curdate()
+			</if>
+			<if test="statisticsDate==1">
+				statistics_date = date_sub(curdate(),interval
+				#{statisticsDate} day)
+			</if>
+			<if test="statisticsDate==7">
+				statistics_date between
+				date_sub(curdate(),interval
+				#{statisticsDate} day)
+				and date_sub(curdate(),interval 0 day)
+			</if>
+			and app_key = #{appKey,jdbcType=VARCHAR}
+			and log_type =
+			#{logType,jdbcType=VARCHAR}
+			order by START limit 10
+		</where>
+
+	</select>
+	<!-- 按日期查询启动次数 -->
+	<select id="queryStartTotalTime" resultMap="BaseResultMap">
+		SELECT
+		statistics_date AS statisticsDate,
+		sum(START) AS startCount
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+			statistics_date
+	</select>
+	
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+
+
+	<!-- 启动次数均值 -->
+	<select id="queryStarTimeAvg" resultMap="BaseResultMap">
+		SELECT
+		statistics_SIGN AS
+		statisticsSign,
+		sum(START) /
+		#{day,jdbcType=VARCHAR} AS starttimeAvg
+		FROM
+		START_HOUR
+		<where>
+			statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND app_key =
+			#{appKey,jdbcType=VARCHAR}
+			AND log_type = #{logType,jdbcType=VARCHAR}
+			GROUP BY
+			statistics_SIGN
+		</where>
+	</select>
+
+	<!-- 启动占比 -->
+	<select id="queryStartProportion" resultMap="BaseResultMap">
+		SELECT
+		statistics_SIGN AS statisticSsign,
+		sum(START)/(
+		SELECT
+		sum(START)
+		AS
+		TotalSTART
+		FROM
+		START_HOUR
+		WHERE
+		statistics_date BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND app_key =
+		#{appKey,jdbcType=VARCHAR}
+		AND log_type = #{logType,jdbcType=VARCHAR}
+		)
+		AS startProportion
+		FROM
+		START_HOUR
+		<where>
+			statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND app_key =
+			#{appKey,jdbcType=VARCHAR}
+			AND log_type = #{logType,jdbcType=VARCHAR}
+			GROUP BY
+			statistics_SIGN
+		</where>
+	</select>
+	<!-- 启动次数按时段分组 -->
+	<select id="queryTotalStartBySign" resultMap="BaseResultMap">
+		SELECT
+		statistics_SIGN AS statisticsSign,
+		sum(START) AS totalStart
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+			GROUP BY
+			statistics_SIGN
+	</select>
+
+
+	<select id="queryHighTime" resultMap="BaseResultMap">
+		<!-- SELECT statistics_SIGN AS statisticsSign, sum(START) AS totalStart 
+			FROM START_HOUR <include refid="Where_Column_AppKeyOrLogType2" /> GROUP BY 
+			statisticsSign order by totalStart desc limit 1 -->
+		SELECT
+		statisticsSign statisticsSign,
+		totalStartBySign / totalStart StartBySignPerTotal
+		FROM
+		(
+		SELECT
+		APP_KEY appkey1,
+		statistics_SIGN AS statisticsSign,
+		sum(START) AS totalStartBySign
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		statisticsSign
+		ORDER BY
+		totalStartBySign DESC
+		) AS a
+		LEFT JOIN (
+		SELECT
+		APP_KEY appkey2,
+		SUM(START) totalStart
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		) AS b ON a.appkey1 = b.appkey2
+	</select>
+
+	<select id="queryLowTime" resultMap="BaseResultMap">
+		SELECT
+		statistics_SIGN AS statisticsSign,
+		sum(START) AS totalStart
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+			GROUP BY
+			statisticsSign
+			order by totalStart asc
+			limit 1
+	</select>
+
+	<select id="queryHighTimeStartPer" resultMap="BaseResultMap">
+		SELECT
+		statistics_SIGN AS statisticsSign,
+		sum(START) / (
+		SELECT
+		sum(START) AS
+		TotalSTART
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		)
+		AS highTimeStartPer
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		statisticsSign
+		ORDER BY
+		highTimeStartPer DESC LIMIT 1
+	</select>
+
+
+	<select id="querylowTimeStartPer" resultMap="BaseResultMap">
+		SELECT
+		statistics_SIGN AS statisticsSign,
+		sum(START) / (
+		SELECT
+		sum(START) AS
+		TotalSTART
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		)
+		AS lowTimeStartPer
+		FROM
+		START_HOUR
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		statisticsSign
+		ORDER BY
+		lowTimeStartPer ASC LIMIT 1
+	</select>
+</mapper>

@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.ModelInvokeMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.ModelInvoke">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="serverid" property="serverid" jdbcType="VARCHAR" />
+		<result column="log_type" property="logType" jdbcType="VARCHAR" />
+		<result column="app_key" property="appKey" jdbcType="VARCHAR" />
+		<result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+		<result column="model_name" property="modelName" jdbcType="VARCHAR" />
+		<result column="statistics_invoke_num" property="statisticsInvokeNum"
+			jdbcType="INTEGER" />
+		<result column="statistics_date" property="statisticsDate"
+			jdbcType="TIMESTAMP" />
+		<result column="affiliated_org" property="affiliatedOrg"
+			jdbcType="VARCHAR" />
+		<result column="affiliated_region" property="affiliatedRegion"
+			jdbcType="VARCHAR" />
+
+	</resultMap>
+	<!--首页top10模块使用 -->
+	<select id="queryTop10Model" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT TRIM(MODEL_NAME) as modelName ,SUM(STATISTICS_INVOKE_NUM) as statisticsInvokeNum FROM MODEL_INVOKE_DAY
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			GROUP BY TRIM(MODEL_NAME)
+			ORDER BY statisticsInvokeNum ASC LIMIT 10
+		</where>
+	</select>
+	
+	<select id="queryTop10ModelASC" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT TRIM(MODEL_NAME) as modelName ,SUM(STATISTICS_INVOKE_NUM) as statisticsInvokeNum FROM MODEL_INVOKE_DAY
+		<where>
+			<if test="statisticsDate==1 or statisticsDate==0">
+				STATISTICS_DATE = DATE_SUB(CURDATE(),INTERVAL
+				#{statisticsDate} DAY)
+			</if>
+			<if test="statisticsDate==7">
+				STATISTICS_DATE BETWEEN
+				DATE_SUB(CURDATE(),INTERVAL
+				#{statisticsDate} DAY)
+				AND DATE_SUB(CURDATE(),INTERVAL
+				0 DAY)
+			</if>
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			GROUP BY TRIM(MODEL_NAME)
+			ORDER BY statisticsInvokeNum asc LIMIT 10
+		</where>
+	</select>
+	<!-- 柱状图表 -->
+	<select id="selectRecord" parameterType="java.lang.Long" resultMap="BaseResultMap">
+	select * from MODEL_INVOKE_DAY   where STATISTICS_DATE between '2017-01-08' and 
+	'2017-07-18'  group by TRIM(MODEL_NAME) order by STATISTICS_INVOKE_NUM ASC LIMIT 8
+
+	</select>
+	
+	<!-- 查询总数 -->
+	<select id="queryCount" parameterType="java.lang.Long" resultMap="BaseResultMap">
+			SELECT 
+			
+			TRIM(MODEL_NAME) as modelName ,SUM(STATISTICS_INVOKE_NUM) as statisticsInvokeNum
+				
+			 FROM
+				  
+			MODEL_INVOKE_DAY   
+			
+				<where>
+					STATISTICS_DATE BETWEEN
+					DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+					AND
+					DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+					AND APP_KEY =
+					#{appKey,jdbcType=VARCHAR}
+					AND UPPER(LOG_TYPE) IN
+					<if test="logType!=null">
+						(#{logType,jdbcType=VARCHAR})
+					</if>
+					<if test="logTypes!=null and logTypes.length>0">
+						<foreach collection="logTypes" item="item" index="index"
+							open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+					<if test="versions!=null and versions.length>0">
+						AND APP_VERSION IN
+						<foreach collection="versions" item="item" index="index"
+							open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+					group by TRIM(MODEL_NAME)
+				</where>
+	</select>
+	
+	<!--查询详情-->
+	<select id="queryDetail" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT 
+		
+		TRIM(MODEL_NAME) as modelName ,SUM(STATISTICS_INVOKE_NUM) as statisticsInvokeNum
+		
+		 FROM
+		  
+		MODEL_INVOKE_DAY   
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			group by TRIM(MODEL_NAME)
+			ORDER BY statisticsInvokeNum DESC
+		</where>
+		limit ${start},${size}
+	</select>
+	
+	<!-- 模块TOP10图表 -->
+	<select id="selectRecordTop" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT TRIM(MODEL_NAME) as modelName ,SUM(STATISTICS_INVOKE_NUM) as statisticsInvokeNum FROM MODEL_INVOKE_DAY
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			group by TRIM(MODEL_NAME)
+			ORDER BY statisticsInvokeNum DESC LIMIT 10
+		</where>
+	</select>
+	
+	<!-- 模块under8图表 -->
+	<select id="selectRecordUnder" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT TRIM(MODEL_NAME) as modelName ,SUM(STATISTICS_INVOKE_NUM) as statisticsInvokeNum FROM MODEL_INVOKE_DAY
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			group by TRIM(MODEL_NAME)
+			ORDER BY statisticsInvokeNum ASC LIMIT 10
+		</where>
+	</select>
+	
+	<select id="selectRecordASC" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT TRIM(MODEL_NAME) as modelName ,SUM(STATISTICS_INVOKE_NUM) as statisticsInvokeNum FROM MODEL_INVOKE_DAY
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			group by TRIM(MODEL_NAME)
+			ORDER BY statisticsInvokeNum ASC LIMIT 10
+		</where>
+	</select>
+	<!-- 模块明细 -->
+	<select id="queryTop10ModelDetail" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT TRIM(MODEL_NAME) as modelName ,SUM(STATISTICS_INVOKE_NUM) as
+		statisticsInvokeNum FROM MODEL_INVOKE_DAY
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			group by TRIM(MODEL_NAME)
+		</where>
+	</select>
+</mapper>

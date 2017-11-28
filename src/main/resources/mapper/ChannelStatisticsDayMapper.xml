@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.ChannelStatisticsDayMapper">
+	<resultMap id="BaseResultMap"
+		type="com.anrong.wulan.admin.po.ChannelStatisticsDay">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="serverid" property="serverid" jdbcType="VARCHAR" />
+		<result column="log_type" property="logType" jdbcType="VARCHAR" />
+		<result column="app_key" property="appKey" jdbcType="VARCHAR" />
+		<result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+		<result column="channel" property="channelName" jdbcType="VARCHAR" />
+		<result column="active_user_day" property="activeUserDay"
+			jdbcType="INTEGER" />
+		<result column="startCount" property="startCount" jdbcType="INTEGER" />
+		<result column="avg_user_day" property="avgUserDay" jdbcType="INTEGER" />
+		<result column="new_user_day" property="newUserDay" jdbcType="INTEGER" />
+		<result column="statistics_date" property="statisticsDate"
+			jdbcType="TIMESTAMP" />
+		<result column="userCount" property="userCount" jdbcType="INTEGER" />
+	</resultMap>
+	<!-- 查询条件 -->
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	<!-- 渠道活跃用户情况 -->
+	<select id="getActiveUserByChanel" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select id,channel_name channel,active_user_day,statistics_date FROM
+		CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		<if test="channelName!=null">
+			AND CHANNEL_NAME = #{channelName,jdbcType=VARCHAR}
+		</if>
+	</select>
+	<!-- 根据渠道名字查询渠道新增用户数量 -->
+	<select id="getNewUserByChanelCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select id,channel_name channel,new_user_day,statistics_date FROM
+		CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		<if test="channelName!=null">
+			AND CHANNEL_NAME = #{channelName,jdbcType=VARCHAR}
+		</if>
+	</select>
+	<!-- 根据渠道名字查询渠道新增用户情况 -->
+	<select id="getNewUserByChanel" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select id,channel_name
+		channel,new_user_day,active_user_day,avg_user_day,statistics_date FROM
+		CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		<if test="channelName!=null">
+			AND CHANNEL_NAME = #{channelName,jdbcType=VARCHAR}
+			ORDER BY
+			statistics_date DESC
+		</if>
+	</select>
+	<!-- 查询TOP5新增用户渠道名称 -->
+	<select id="getNewUserChanelNameTop5" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select channel_name channel ,SUM(NEW_USER_DAY) NEW_USER_DAY FROM
+		CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY channel_name ORDER BY new_user_day DESC LIMIT 5
+	</select>
+	<!-- 查询TOP5活跃用户渠道名称 -->
+	<select id="getActiveUserChanelNameTop5" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select channel_name channel ,SUM(ACTIVE_USER_DAY) NEW_USER_DAY FROM
+		CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY channel_name ORDER BY new_user_day DESC LIMIT 5
+	</select>
+	<!-- 查询TOP5人均使用时长用户渠道名称 -->
+	<select id="getAvgUserChanelNameTop5" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select channel_name channel ,SUM(AVG_USER_DAY) NEW_USER_DAY FROM
+		CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY channel_name ORDER BY new_user_day DESC LIMIT 5
+	</select>
+	<!--根据top5的渠道名称查询新增用户渠道所有数据 -->
+	<select id="getChanelNameTop5Data" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select * from CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		AND CHANNEL_NAME = #{channelName,jdbcType=VARCHAR}
+	</select>
+	<!-- 渠道用户使用时长情况 -->
+	<select id="getAvgUserByChanel" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select id,channel_name channel,avg_user_day,statistics_date FROM
+		CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		<if test="channelName!=null">
+			AND CHANNEL_NAME = #{channelName,jdbcType=VARCHAR}
+		</if>
+	</select>
+	<!-- 渠道详细信息 -->
+	<select id="getChannelDataCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select id,channel_name channel,
+		(select sum(NEW_USER_DAY) from
+		CHANNEL_STATISTICS_DAY
+		<where>
+			AND STATISTICS_DATE &lt;
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			AND CHANNEL_NAME = channel
+		</where>
+		) as userCount,
+		SUM(ACTIVE_USER_DAY) as
+		active_user_day,SUM(AVG_USER_DAY) as avg_user_day,
+		SUM(NEW_USER_DAY) as
+		new_user_day FROM CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY CHANNEL_NAME
+	</select>
+	<select id="getChannelData" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select id,channel_name channel,
+		(select sum(NEW_USER_DAY) from
+		CHANNEL_STATISTICS_DAY
+		<where>
+			AND STATISTICS_DATE &lt;
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			AND CHANNEL_NAME = channel
+		</where>
+		) as userCount,
+		SUM(ACTIVE_USER_DAY) as
+		active_user_day,SUM(AVG_USER_DAY) as avg_user_day,
+		SUM(NEW_USER_DAY) as
+		new_user_day FROM CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY CHANNEL_NAME
+		limit ${start},${size}
+	</select>
+	<select id="getChannelName" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select distinct channel_name channel from CHANNEL_STATISTICS_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+	</select>
+
+</mapper>

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.NewUserVendorDayMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.NewUserVendorDay">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="serverid" property="serverid" jdbcType="VARCHAR" />
+		<result column="log_type" property="logType" jdbcType="VARCHAR" />
+		<result column="app_key" property="appKey" jdbcType="VARCHAR" />
+		<result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+		<result column="vendor" property="vendor" jdbcType="VARCHAR" />
+		<result column="new_user" property="newUser" jdbcType="INTEGER" />
+		<result column="statistics_date" property="statisticsDate"
+			jdbcType="TIMESTAMP" />
+		<result column="newUserTotal" property="newUserTotal" jdbcType="INTEGER" />
+		<result column="newUserProportion" property="newUserProportion"
+			jdbcType="DOUBLE" />
+		<result column="hotVendor" property="hotVendor"
+			jdbcType="VARCHAR" />
+		<result column="thirthFast" property="thirthFast"
+			jdbcType="VARCHAR" />
+			
+			
+	</resultMap>
+	
+	
+	<select id="getModelData" resultMap="BaseResultMap">
+		SELECT
+		VENDOR AS vendor,
+		sum(NEW_USER) AS newUserTotal
+		FROM
+		NEW_USER_VENDOR_DAY
+		GROUP BY
+		VENDOR
+		ORDER BY newUserTotal DESC
+		LIMIT 0,5;
+		
+	</select>
+	
+	<!-- 按机型分组查询新增用户 -->
+	<select id="queryNewUser" resultMap="BaseResultMap">
+		SELECT
+		VENDOR AS vendor,
+		sum(NEW_USER) AS newUserTotal
+		FROM
+		NEW_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+			GROUP BY
+			VENDOR
+			order by newUserTotal desc
+	</select>
+	<!-- 新增用户比例 -->
+	<select id="queryNewUserProportion" resultMap="BaseResultMap">
+		SELECT
+		VENDOR AS
+		vendor,
+		sum(NEW_USER) / (
+		SELECT
+		sum(NEW_USER)
+		FROM
+		NEW_USER_VENDOR_DAY
+		WHERE
+		statistics_date BETWEEN
+		DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND
+		DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		AND app_key =
+		#{appKey,jdbcType=VARCHAR}
+		AND log_type = #{logType,jdbcType=VARCHAR}
+		)
+		AS newUserProportion
+		FROM
+		NEW_USER_VENDOR_DAY
+		<where>
+			statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND app_key =
+			#{appKey,jdbcType=VARCHAR}
+			AND log_type = #{logType,jdbcType=VARCHAR}
+			GROUP BY
+			VENDOR
+		</where>
+	</select>
+
+	<select id="queryHotVendor" resultMap="BaseResultMap">
+		SELECT
+		VENDOR AS hotVendor,
+		sum(NEW_USER) sumuser
+		FROM
+		NEW_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType2" />
+		GROUP BY
+		VENDOR ORDER BY(sumuser) DESC LIMIT 1
+	</select>
+
+	<sql id="Where_Column_AppKeyOrLogType2">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+
+	<select id="queryFastVendor" resultMap="BaseResultMap">
+		SELECT
+		vendor1 thirthFast,
+		(
+		CASE
+		WHEN newUserPro - perThirtyDayPro IS NULL THEN
+		0
+		ELSE
+		newUserPro - perThirtyDayPro
+		END
+		) proportion
+		FROM
+		(
+		SELECT
+		VENDOR vendor1,
+		newUser / newUserTotal newUserPro
+		FROM
+		(
+		SELECT
+		APP_KEY,
+		VENDOR VENDOR,
+		sum(new_user) newUser
+		FROM
+		NEW_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND statistics_date &lt;= DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		GROUP BY
+		VENDOR
+		) AS a
+		LEFT JOIN (
+		SELECT
+		APP_KEY,
+		sum(NEW_USER) newUserTotal
+		FROM
+		NEW_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND statistics_date &lt;= DATE_SUB(CURDATE(), INTERVAL 0 DAY)
+		) AS b ON
+		a.APP_KEY = b.APP_KEY
+		) AS c
+		LEFT JOIN (
+		SELECT
+		appkey1,
+		VENDOR vendor2,
+		newUser / newUserTotal perThirtyDayPro
+		FROM
+		(
+		SELECT
+		APP_KEY appkey1,
+		vendor VENDOR,
+		sum(new_user) newUser
+		FROM
+		NEW_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND statistics_date &lt; DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+		GROUP BY
+		VENDOR
+		) AS a
+		LEFT JOIN (
+		SELECT
+		APP_KEY appkey2,
+		sum(NEW_USER) newUserTotal
+		FROM
+		NEW_USER_VENDOR_DAY
+		<include refid="Where_Column_AppKeyOrLogType3" />
+		AND statistics_date &lt;
+		DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+		) AS b ON a.appkey1 = b.appkey2
+		) AS d ON c.vendor1 = d.vendor2
+		ORDER BY
+		proportion DESC
+		LIMIT 1
+	</select>
+	
+	<sql id="Where_Column_AppKeyOrLogType3">
+		<where>
+			APP_KEY = #{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

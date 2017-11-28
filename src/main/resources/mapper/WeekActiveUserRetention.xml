@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.WeekActiveUserRetentionMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.WeekActiveUserRetention">
+		<result column="date" property="date" jdbcType="VARCHAR" />
+		<result column="activeUserWeek" property="activeUserWeek" jdbcType="INTEGER" />
+		<result column="oneWeek" property="oneWeek" jdbcType="DOUBLE" />
+		<result column="twoWeek" property="twoWeek" jdbcType="DOUBLE" />
+		<result column="threeWeek" property="threeWeek" jdbcType="DOUBLE" />
+		<result column="fourWeek" property="fourWeek" jdbcType="DOUBLE" />
+		<result column="fiveWeek" property="fiveWeek" jdbcType="DOUBLE" />
+		<result column="sixWeek" property="sixWeek" jdbcType="DOUBLE" />
+		<result column="sevenWeek" property="sevenWeek" jdbcType="DOUBLE" />
+		<result column="fourteenWeek" property="fourteenWeek" jdbcType="DOUBLE" />
+		<result column="eightWeek" property="eightWeek" jdbcType="DOUBLE" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		date,activeUserWeek,oneWeek,twoWeek,threeWeek,fourWeek,fiveWeek,sixWeek,sevenWeek,eightWeek
+	</sql>
+	<select id="queryRetentionCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		STATISTICS_DATE date,
+		ACTIVE_USER activeUserWeek,
+		round((ONE_WEEK_RETENTION /
+		ACTIVE_USER) * 100,2) oneWeek,
+		round((TWO_WEEK_RETENTION / ACTIVE_USER) *
+		100,2) twoWeek,
+		round((THREE_WEEK_RETENTION / ACTIVE_USER) * 100,2)
+		threeWeek,
+		round((FOUR_WEEK_RETENTION / ACTIVE_USER) * 100,2) fourWeek,
+		round((FIVE_WEEK_RETENTION / ACTIVE_USER) * 100,2) fiveWeek,
+		round((SIX_WEEK_RETENTION / ACTIVE_USER) * 100,2) sixWeek,
+		round((SEVEN_WEEK_RETENTION / ACTIVE_USER) * 100,2) sevenWeek,
+		round((EIGHT_WEEK_RETENTION / ACTIVE_USER) * 100,2) eightWeek
+		FROM
+		ACTIVE_USER_RETENTION_WEEK
+		<include refid="Where_Column_AppKeyOrLogType" />
+		ORDER BY date DESC
+	</select>
+	<select id="queryRetention" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		STATISTICS_DATE date,
+		ACTIVE_USER activeUserWeek,
+		round((ONE_WEEK_RETENTION /
+		ACTIVE_USER) * 100,2) oneWeek,
+		round((TWO_WEEK_RETENTION / ACTIVE_USER) *
+		100,2) twoWeek,
+		round((THREE_WEEK_RETENTION / ACTIVE_USER) * 100,2)
+		threeWeek,
+		round((FOUR_WEEK_RETENTION / ACTIVE_USER) * 100,2) fourWeek,
+		round((FIVE_WEEK_RETENTION / ACTIVE_USER) * 100,2) fiveWeek,
+		round((SIX_WEEK_RETENTION / ACTIVE_USER) * 100,2) sixWeek,
+		round((SEVEN_WEEK_RETENTION / ACTIVE_USER) * 100,2) sevenWeek,
+		round((EIGHT_WEEK_RETENTION / ACTIVE_USER) * 100,2) eightWeek
+		FROM
+		ACTIVE_USER_RETENTION_WEEK
+		<include refid="Where_Column_AppKeyOrLogType" />
+		ORDER BY date DESC limit ${start},${size}
+	</select>
+	<sql id="Where_Column_AppKeyOrLogType">
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

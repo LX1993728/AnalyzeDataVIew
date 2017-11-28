@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.NewUserOsMapper">
+	<resultMap id="BaseResultMap" type="com.anrong.wulan.admin.po.NewUserOs">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="serverid" property="serverid" jdbcType="VARCHAR" />
+		<result column="log_type" property="logType" jdbcType="VARCHAR" />
+		<result column="app_key" property="appKey" jdbcType="VARCHAR" />
+		<result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+		<result column="os" property="os" jdbcType="VARCHAR" />
+		<result column="new_user" property="newUser" jdbcType="INTEGER" />
+		<result column="statistics_date" property="statisticsDate"
+			jdbcType="TIMESTAMP" />
+		<result column="affiliated_org" property="affiliatedOrg"
+			jdbcType="VARCHAR" />
+		<result column="affiliated_region" property="affiliatedRegion"
+			jdbcType="VARCHAR" />
+		<result column="newUserCount" property="newUserCount" jdbcType="INTEGER" />
+		<result column="newUserProportion" property="newUserProportion"
+			jdbcType="DOUBLE" />
+		<result column="hotOs" property="hotOs" jdbcType="VARCHAR" />
+		<result column="thirthFast" property="thirthFast" jdbcType="VARCHAR" />
+
+		<!-- 版本分布 -->
+		<result column="activeUser" property="activeUser" jdbcType="INTEGER" />
+		<result column="newUserRate" property="newUserRate" jdbcType="DOUBLE" />
+		<result column="actUserRate" property="actUserRate" jdbcType="DOUBLE" />
+
+		<!-- 版本明细 -->
+		<result column="start" property="start" jdbcType="INTEGER" />
+
+	</resultMap>
+
+	<!-- 全部版本 -->
+	<select id="queryAllVersionOs" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select APP_VERSION ,OS,sum(NEW_USER)AS newUser from NEW_USER_OS_DAY
+		<include refid="Where_Column_Detial" />
+		GROUP BY APP_VERSION,OS
+		ORDER BY newUser DESC
+	</select>
+
+	<!-- 按系统查询新增用户 -->
+	<select id="queryNewUserTotal" resultMap="BaseResultMap">
+		SELECT
+		os AS os,
+		sum(NEW_USER) AS newUserCount
+		FROM
+		NEW_USER_OS_DAY
+		<include refid="Where_Column_Detial" />
+		GROUP BY
+		os
+		order by newUserCount desc
+	</select>
+
+	<sql id="Where_Column_Detial">
+		<where>
+			AND statistics_date BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>

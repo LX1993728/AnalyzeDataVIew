@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anrong.wulan.admin.dao.DayActiveUserRetentionMapper">
+	<resultMap id="BaseResultMap"
+		type="com.anrong.wulan.admin.po.DayActiveUserRetention">
+		<result column="date" property="date" jdbcType="VARCHAR" />
+		<result column="activeUserDay" property="activeUserDay"
+			jdbcType="INTEGER" />
+		<result column="oneDay" property="oneDay" jdbcType="DOUBLE" />
+		<result column="twoDay" property="twoDay" jdbcType="DOUBLE" />
+		<result column="threeDay" property="threeDay" jdbcType="DOUBLE" />
+		<result column="fourDay" property="fourDay" jdbcType="DOUBLE" />
+		<result column="fiveDay" property="fiveDay" jdbcType="DOUBLE" />
+		<result column="sixDay" property="sixDay" jdbcType="DOUBLE" />
+		<result column="sevenDay" property="sevenDay" jdbcType="DOUBLE" />
+		<result column="fourteenDay" property="fourteenDay" jdbcType="DOUBLE" />
+		<result column="thirtyDay" property="thirtyDay" jdbcType="DOUBLE" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		date,activeUserDay,oneDay,twoDay,threeDay,fourDay,fiveDay,sixDay,sevenDay,fourteenDay,thirtyDay
+	</sql>
+	<select id="queryRetentionCount" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		STATISTICS_DATE date,
+		ACTIVE_USER activeUserDay,
+		round((ONE_DAY_RETENTION /
+		ACTIVE_USER) * 100,2) oneDay,
+		round((TWO_DAY_RETENTION / ACTIVE_USER) *
+		100,2) twoDay,
+		round((THREE_DAY_RETENTION / ACTIVE_USER) * 100,2)
+		threeDay,
+		round((FOUR_DAY_RETENTION / ACTIVE_USER) * 100,2) fourDay,
+		round((FIVE_DAY_RETENTION / ACTIVE_USER) * 100,2) fiveDay,
+		round((SIX_DAY_RETENTION / ACTIVE_USER) * 100,2) sixDay,
+		round((SEVEN_DAY_RETENTION / ACTIVE_USER) * 100,2) sevenDay,
+		round((FOURTEEN_DAY_RETENTION / ACTIVE_USER) * 100,2) fourteenDay,
+		round((THIRTY_DAY_RETENTION / ACTIVE_USER) * 100,2) thirtyDay
+		FROM
+		ACTIVE_USER_RETENTION_DAY
+		<include refid="Where_Column_AppKeyOrLogType" />
+		ORDER BY date DESC
+	</select>
+	<select id="queryRetention" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		SELECT
+		STATISTICS_DATE date,
+		ACTIVE_USER activeUserDay,
+		round((ONE_DAY_RETENTION /
+		ACTIVE_USER) * 100,2) oneDay,
+		round((TWO_DAY_RETENTION / ACTIVE_USER) *
+		100,2) twoDay,
+		round((THREE_DAY_RETENTION / ACTIVE_USER) * 100,2)
+		threeDay,
+		round((FOUR_DAY_RETENTION / ACTIVE_USER) * 100,2) fourDay,
+		round((FIVE_DAY_RETENTION / ACTIVE_USER) * 100,2) fiveDay,
+		round((SIX_DAY_RETENTION / ACTIVE_USER) * 100,2) sixDay,
+		round((SEVEN_DAY_RETENTION / ACTIVE_USER) * 100,2) sevenDay,
+		round((FOURTEEN_DAY_RETENTION / ACTIVE_USER) * 100,2) fourteenDay,
+		round((THIRTY_DAY_RETENTION / ACTIVE_USER) * 100,2) thirtyDay
+		FROM
+		ACTIVE_USER_RETENTION_DAY
+		<include refid="Where_Column_AppKeyOrLogType" />
+		ORDER BY date DESC limit ${start},${size}
+	</select>
+	<sql id="Where_Column_AppKeyOrLogType">
+		<where>
+			STATISTICS_DATE BETWEEN
+			DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND
+			DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d')
+			AND APP_KEY =
+			#{appKey,jdbcType=VARCHAR}
+			AND UPPER(LOG_TYPE) IN
+			<if test="logType!=null">
+				(#{logType,jdbcType=VARCHAR})
+			</if>
+			<if test="logTypes!=null and logTypes.length>0">
+				<foreach collection="logTypes" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="versions!=null and versions.length>0">
+				AND APP_VERSION IN
+				<foreach collection="versions" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+</mapper>
